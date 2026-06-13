@@ -4,16 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Old Lucky Dog — Consolidated App</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<script src="../shared.js"></script>
 <style>
   :root{
-    --bg:#101114; --surface:#161A1E; --surface-2:#1B2026; --surface-3:#212830;
-    --text:#F5F3EE; --muted:#BFC7CC; --faint:#7E878D;
-    --copper:#C9782F; --blue:#63A4D1; --pos:#49A579; --neg:#D9685D;
-    --line:rgba(191,199,204,0.12); --line-strong:rgba(191,199,204,0.20); --grid:rgba(191,199,204,0.10);
-    --sora:'Sora',system-ui,sans-serif; --inter:'Inter',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --bg: var(--dark-bg);
+    --surface: var(--dark-surface);
+    --surface-2: var(--dark-surface-2);
+    --surface-3: #212830;
+    --text: var(--dark-text);
+    --muted: var(--dark-muted);
+    --faint: var(--dark-faint);
+    --copper: var(--dark-copper);
+    --blue: var(--dark-blue);
+    --pos: var(--dark-green);
+    --neg: var(--dark-red);
+    --line: rgba(191,199,204,0.12);
+    --line-strong: rgba(191,199,204,0.20);
+    --grid: var(--dark-line);
+    --sora: var(--font-headline);
+    --inter: var(--font-body);
+    --mono: var(--font-mono);
   }
   *{box-sizing:border-box; margin:0; padding:0}
   button{color:inherit; font-family:inherit; background:none; border:none; cursor:pointer}
@@ -271,7 +282,7 @@
       <div class="notch"></div>
       <div class="appbar">
         <span class="back" id="back" onclick="back()">‹</span>
-        <span class="old" id="ab-old">OLD</span>
+        <span class="old" id="ab-old" onclick="window.location.href='../index.html'" style="cursor:pointer" title="Back to hub">OLD</span>
         <span class="ttl" id="ab-title" style="display:none">Title</span>
         <span class="streak" id="ab-streak">🔥 <b>6</b> day streak</span>
         <span class="ev" id="ab-ev">NVDA · earnings<br>May 28 · in 6d</span>
