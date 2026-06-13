@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Old Lucky Dog — Consolidated App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#101114; --surface:#161A1E; --surface-2:#1B2026; --surface-3:#212830;
+    --text:#F5F3EE; --muted:#BFC7CC; --faint:#7E878D;
+    --copper:#C9782F; --blue:#63A4D1; --pos:#49A579; --neg:#D9685D;
+    --line:rgba(191,199,204,0.12); --line-strong:rgba(191,199,204,0.20); --grid:rgba(191,199,204,0.10);
+    --sora:'Sora',system-ui,sans-serif; --inter:'Inter',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  button{color:inherit; font-family:inherit; background:none; border:none; cursor:pointer}
+  body{background:#0A0B0D; color:var(--text); font-family:var(--inter); min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; padding:26px 16px 56px;
+    background:radial-gradient(1200px 600px at 50% -10%, #15171B 0%, #0A0B0D 60%)}
+  .mono{font-family:var(--mono); font-feature-settings:"tnum" 1; letter-spacing:-0.01em}
+  .pos{color:var(--pos)} .neg{color:var(--neg)} .cop{color:var(--copper)} .blu{color:var(--blue)}
+
+  .head{max-width:560px; text-align:center; margin-bottom:16px}
+  .eyebrow{font-size:11px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--copper)}
+  .head h1{font-family:var(--sora); font-weight:700; font-size:23px; margin-top:8px}
+  .head p{color:var(--muted); font-size:13px; margin-top:9px; line-height:1.55}
+
+  .phone{width:390px; max-width:96vw; height:852px; max-height:90vh; background:var(--bg);
+    border-radius:44px; padding:12px; position:relative;
+    box-shadow:0 0 0 11px #1a1c20, 0 0 0 13px #2a2d33, 0 40px 90px -30px rgba(0,0,0,.9)}
+  .screen{position:relative; width:100%; height:100%; background:var(--bg); border-radius:33px; overflow:hidden; display:flex; flex-direction:column}
+  .notch{position:absolute; top:0; left:50%; transform:translateX(-50%); width:130px; height:26px; background:#0A0B0D; border-radius:0 0 16px 16px; z-index:40}
+
+  .appbar{display:flex; align-items:center; gap:10px; padding:34px 16px 8px; flex:0 0 auto; z-index:30}
+  .appbar .back{color:var(--muted); font-size:20px; width:18px; display:none}
+  .appbar .back.show{display:block}
+  .old{font-family:var(--sora); font-weight:800; font-size:15px; letter-spacing:.06em}
+  .appbar .ttl{font-family:var(--sora); font-weight:700; font-size:15px}
+  .appbar .ttl .sub{font-family:var(--inter); font-weight:400; font-size:11px; color:var(--faint); margin-left:4px}
+  .appbar .streak{margin-left:auto; display:inline-flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:5px 10px; font-size:11px; color:var(--muted)}
+  .appbar .streak b{font-family:var(--mono); color:var(--copper); font-weight:600}
+  .appbar .ev{margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--muted); text-align:right; display:none}
+
+  .stage{position:relative; flex:1; overflow:hidden}
+  .pane{position:absolute; inset:0; display:none; flex-direction:column}
+  .pane.active{display:flex; animation:fade .26s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .pscroll{flex:1; overflow-y:auto; padding:4px 14px 18px; scrollbar-width:none}
+  .pscroll::-webkit-scrollbar{display:none}
+  .sec-lab{font-size:10px; font-weight:600; letter-spacing:.13em; text-transform:uppercase; color:var(--copper); margin:16px 2px 9px; display:flex; align-items:center}
+  .sec-lab .more{margin-left:auto; color:var(--faint); font-size:10px; letter-spacing:.04em; text-transform:none; font-weight:500}
+
+  /* generic */
+  .ctag{display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:600; letter-spacing:.13em; text-transform:uppercase; color:var(--copper)}
+  .ctag.green{color:var(--pos)} .ctag.green .dot{background:var(--pos)} .ctag.blue{color:var(--blue)} .ctag.blue .dot{background:var(--blue)}
+  .ctag .dot{width:5px; height:5px; border-radius:50%; background:var(--copper)}
+  .receipts{display:flex; flex-wrap:wrap; gap:6px 0; align-items:center; font-size:11px; color:var(--muted); margin-top:12px}
+  .receipts .r{padding-right:10px; margin-right:10px; border-right:1px solid var(--line)} .receipts .r:last-child{border:0;margin:0;padding:0}
+  .receipts .r b{font-family:var(--mono); color:var(--text); font-weight:500}
+  .btn{display:flex; align-items:center; justify-content:center; gap:8px; border-radius:11px; font-weight:600; font-size:13.5px; padding:13px 16px; width:100%; transition:.15s}
+  .btn-primary{background:var(--blue); color:#0B1418} .btn-primary:hover{filter:brightness(1.06)}
+  .btn-ghost{border:1px solid var(--line-strong); color:var(--text)} .btn-ghost:hover{border-color:var(--muted)}
+  .btn[disabled]{opacity:.35; cursor:not-allowed}
+
+  /* daily read */
+  .dr{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:13px 15px; margin-top:6px}
+  .dr .hi{font-family:var(--sora); font-weight:600; font-size:14.5px}
+  .dr .sub{font-size:11.5px; color:var(--muted); margin-top:3px}
+  .dr .bar{height:5px; border-radius:5px; background:var(--surface-2); margin-top:11px; overflow:hidden}
+  .dr .bar i{display:block; height:100%; background:var(--copper); border-radius:5px; width:60%}
+  .dr .bsub{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--faint); margin-top:7px}
+
+  /* swipe deck */
+  .deck{position:relative; height:432px; margin-top:4px}
+  .swipe-card{position:absolute; inset:0; background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:16px;
+    display:flex; flex-direction:column; will-change:transform; touch-action:none; user-select:none; box-shadow:0 20px 50px -30px rgba(0,0,0,.9)}
+  .swipe-card.behind{transform:scale(.94) translateY(12px); opacity:.5; pointer-events:none}
+  .swipe-card.behind2{transform:scale(.88) translateY(24px); opacity:.22; pointer-events:none}
+  .tagrow{display:flex; align-items:center; gap:8px}
+  .curated{margin-left:auto; display:inline-flex; align-items:center; gap:5px; font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); border:1px solid var(--line); border-radius:14px; padding:3px 8px}
+  .curated::before{content:"◆"; color:var(--copper); font-size:8px}
+  .datapill{margin-left:6px; font-size:9px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--copper); border:1px solid rgba(201,120,47,.4); border-radius:12px; padding:3px 8px}
+  .chain{display:flex; align-items:stretch; gap:8px; margin:14px 0 2px}
+  .node{flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:11px; padding:9px 10px}
+  .node .ac{font-family:var(--mono); font-size:8px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint)}
+  .node .nm{font-family:var(--sora); font-weight:700; font-size:15px; margin-top:3px}
+  .node .dt{font-size:10px; color:var(--muted); margin-top:2px; line-height:1.3}
+  .arrow{flex:0 0 36px; align-self:center; text-align:center; color:var(--copper)}
+  .arrow .rel{font-size:8px; letter-spacing:.06em; text-transform:uppercase; font-weight:600; display:block; margin-bottom:2px}
+  .arrow svg{width:36px; height:11px}
+  .claim{font-family:var(--sora); font-weight:600; font-size:16px; line-height:1.32; margin:14px 0 10px}
+  .gap{font-size:12px; color:var(--muted); line-height:1.45; padding:9px 11px; background:var(--surface-2); border:1px solid var(--line); border-left:3px solid var(--blue); border-radius:10px}
+  .gap b{color:var(--text)}
+  .spacer{flex:1; min-height:6px}
+  .qline{font-size:11.5px; color:var(--muted); text-align:center; margin:8px 0 10px} .qline b{color:var(--text)}
+  .outcomes{display:flex; gap:10px}
+  .oc{flex:1; border:1px solid var(--line-strong); border-radius:12px; padding:11px 10px; text-align:center; transition:.15s}
+  .oc .arr{font-size:11px; color:var(--faint); display:block; margin-bottom:3px}
+  .oc .l{font-family:var(--sora); font-weight:600; font-size:13px}
+  .oc .s{font-family:var(--mono); font-size:9px; color:var(--faint); margin-top:3px; display:block}
+  .swipe-card.tilt-left .oc.left,.swipe-card.tilt-right .oc.right{border-color:var(--blue); background:rgba(99,164,209,.14)}
+  .stamp{position:absolute; top:18px; font-family:var(--sora); font-weight:800; font-size:14px; letter-spacing:.08em; padding:5px 11px; border:2px solid var(--blue); color:var(--blue); border-radius:10px; opacity:0; transition:.1s; z-index:5}
+  .stamp.left{left:16px; transform:rotate(-12deg)} .stamp.right{right:16px; transform:rotate(12deg)}
+  .swipe-card.tilt-left .stamp.left,.swipe-card.tilt-right .stamp.right{opacity:1}
+  .deckctl{display:flex; align-items:center; gap:12px; justify-content:center; margin-top:12px}
+  .cbtn{width:48px; height:48px; border-radius:50%; border:1px solid var(--line-strong); background:var(--surface); color:var(--text); font-size:17px; display:flex; align-items:center; justify-content:center; transition:.15s}
+  .cbtn:hover{border-color:var(--muted)} .cbtn.skip{width:40px; height:40px; font-size:12px; color:var(--faint)}
+  .deckcount{font-family:var(--mono); font-size:11px; color:var(--faint)}
+
+  /* express sheet */
+  .sheet{position:absolute; left:12px; right:12px; bottom:80px; background:var(--surface-3); border:1px solid var(--line-strong); border-radius:18px; padding:16px; transform:translateY(140%); transition:.3s cubic-bezier(.2,.8,.2,1); z-index:45; box-shadow:0 -10px 40px -10px rgba(0,0,0,.7)}
+  .sheet.show{transform:translateY(0)}
+  .sheet .conf{display:flex; align-items:center; gap:9px; font-size:12px; color:var(--muted); margin-bottom:13px}
+  .sheet .conf .ic{width:20px; height:20px; border-radius:50%; background:var(--pos); color:#0B1418; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0}
+  .sheet .conf b{color:var(--text)}
+  .sheet .acts{display:flex; gap:9px}
+
+  /* opportunities */
+  .opp{display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:11px 13px; margin-bottom:9px; width:100%; text-align:left}
+  .opp:hover{border-color:var(--muted)}
+  .opp .tk{font-family:var(--sora); font-weight:700; font-size:14px; width:50px; flex:0 0 auto}
+  .opp .mid{flex:1; min-width:0} .opp .mid .t{font-size:11.5px; color:var(--text)} .opp .mid .s{font-size:10px; color:var(--faint); margin-top:2px}
+  .opp .im{font-family:var(--mono); font-size:13px; color:var(--copper); text-align:right} .opp .im span{display:block; font-family:var(--inter); font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:var(--faint)}
+  .opp .go{color:var(--faint); font-size:14px}
+
+  /* ===== STOCK DETAIL (edge card) ===== */
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px; margin-top:8px}
+  .ticker-row{display:flex; align-items:baseline; gap:10px; margin:10px 0 2px}
+  .ticker{font-family:var(--sora); font-weight:700; font-size:17px} .ticker .s{font-family:var(--inter); font-weight:400; font-size:11px; color:var(--faint)}
+  .evtime{margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--muted)} .confirmed{color:var(--pos)}
+  .tabs{display:flex; gap:2px; overflow-x:auto; border-bottom:1px solid var(--line); margin:13px -2px 0; scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto; color:var(--faint); font-weight:500; font-size:11.5px; padding:10px 11px 11px; white-space:nowrap; border-bottom:2px solid transparent; transition:.15s}
+  .tab.active{color:var(--text); border-bottom-color:var(--copper)}
+  .tabpane{display:none; padding-top:15px} .tabpane.active{display:block}
+  .bignum{font-family:var(--mono); font-weight:600; font-size:32px; line-height:1} .bignum .pm{font-size:19px; color:var(--muted)}
+  .bigsub{font-size:11.5px; color:var(--faint); margin-top:6px}
+  .prob-bridge{display:flex; align-items:center; gap:8px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:9px 12px; margin-top:13px}
+  .prob-bridge .ic{color:var(--copper)} .prob-bridge .txt{font-size:12px; color:var(--muted)} .prob-bridge .txt b{font-family:var(--mono); color:var(--text); font-weight:600}
+  .oneline{font-family:var(--sora); font-weight:600; font-size:13.5px; line-height:1.38; margin:13px 0 2px}
+  .stat3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+  .stat3 .s{background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 11px}
+  .stat3 .s .k{font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--faint)} .stat3 .s .v{font-family:var(--mono); font-weight:600; font-size:18px; margin-top:5px}
+  .setup-chips{display:flex; flex-wrap:wrap; gap:8px}
+  .pill{font-size:11px; padding:6px 11px; border-radius:20px; border:1px solid var(--line-strong); color:var(--muted)} .pill.act{border-color:var(--copper); color:var(--copper)}
+  .ivrows{display:flex; flex-direction:column; gap:8px}
+  .ivrow{display:grid; grid-template-columns:64px 1fr 52px; align-items:center; gap:10px}
+  .ivrow .lbl{font-family:var(--mono); font-size:11px; color:var(--muted)} .ivrow .bar{height:7px; border-radius:5px; background:var(--surface-2); overflow:hidden} .ivrow .bar i{display:block; height:100%; border-radius:5px} .ivrow .val{font-family:var(--mono); font-size:11px; text-align:right}
+  .dive-link{display:flex; align-items:center; gap:11px; width:100%; margin-top:15px; padding:12px 13px; background:var(--surface-2); border:1px solid var(--line); border-radius:12px; text-align:left; transition:.15s}
+  .dive-link:hover{border-color:var(--copper); background:rgba(201,120,47,.06)}
+  .dive-link .ic{color:var(--copper)} .dive-link .tx{flex:1; min-width:0} .dive-link .tx .t{font-size:12.5px; font-weight:600; color:var(--text)} .dive-link .tx .s{font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); margin-top:3px} .dive-link .ar{color:var(--copper); font-size:15px}
+
+  /* ===== DEEP DIVE ===== */
+  .lens{flex:0 0 auto; border-bottom:1px solid var(--line); padding:8px 14px 10px; background:var(--bg)}
+  .lens .lab{font-size:9px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); margin-bottom:7px}
+  .lens .row{display:flex; gap:8px}
+  .seg{display:flex; background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:3px}
+  .seg button{font-family:var(--mono); font-size:11px; font-weight:500; color:var(--muted); padding:5px 9px; border-radius:16px; transition:.12s} .seg button.on{background:var(--surface-3); color:var(--text)}
+  .seg.cmp button{font-family:var(--inter); font-weight:600} .seg.cmp button.on{background:rgba(99,164,209,.16); color:var(--blue)}
+  .mod{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:15px 15px 13px; margin-top:14px; scroll-margin-top:8px}
+  .mod:first-child{margin-top:8px} .mod.flash{animation:flash 1.7s ease}
+  @keyframes flash{0%{border-color:var(--line); box-shadow:0 0 0 0 rgba(99,164,209,0)} 18%{border-color:var(--blue); box-shadow:0 0 0 3px rgba(99,164,209,.22)} 100%{border-color:var(--line); box-shadow:0 0 0 0 rgba(99,164,209,0)}}
+  .mlab{font-size:9.5px; font-weight:600; letter-spacing:.13em; text-transform:uppercase; color:var(--copper)}
+  .mtitle{font-family:var(--sora); font-weight:600; font-size:15px; margin-top:6px; line-height:1.3}
+  .here{display:flex; align-items:center; gap:8px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:9px 11px; margin-top:11px}
+  .here .pin{color:var(--copper)} .here .t{font-size:11.5px; color:var(--muted); line-height:1.4} .here .t b{font-family:var(--mono); color:var(--text); font-weight:600}
+  .chartwrap{margin:13px 0 4px} .chartwrap svg{width:100%; height:auto; display:block; overflow:visible}
+  .legend-row{display:flex; flex-wrap:wrap; gap:14px; margin-top:8px; font-size:10px; color:var(--muted)}
+  .legend-row .k{display:inline-flex; align-items:center; gap:6px} .legend-row .k i{width:14px; border-top:2px solid; display:inline-block} .legend-row .k.band i{height:8px; border:0; border-radius:2px}
+  .readout{font-size:12px; color:var(--muted); line-height:1.5; margin-top:12px} .readout b{color:var(--text)} .readout .cav{display:block; font-size:10.5px; color:var(--faint); margin-top:6px}
+  .method{margin-top:10px; border-top:1px solid var(--line); padding-top:9px}
+  .method .tog{font-size:10.5px; color:var(--faint); display:inline-flex; align-items:center; gap:6px} .method .tog::before{content:"▸"; font-size:9px; transition:.15s} .method.open .tog::before{transform:rotate(90deg)}
+  .method .body{display:none; font-size:10.5px; color:var(--muted); line-height:1.5; margin-top:8px} .method.open .body{display:block}
+  .statbig{display:flex; align-items:center; gap:14px; background:var(--surface-2); border:1px solid var(--line); border-left:3px solid var(--copper); border-radius:11px; padding:13px 14px; margin-top:12px}
+  .statbig .n{font-family:var(--mono); font-weight:600; font-size:26px; color:var(--copper); line-height:1} .statbig .x{font-size:11.5px; color:var(--muted); line-height:1.4} .statbig .x b{color:var(--text)}
+  .iva{display:flex; flex-direction:column; gap:7px; margin-top:12px}
+  .iva .row{display:grid; grid-template-columns:48px 1fr 64px; align-items:center; gap:9px}
+  .iva .row .q{font-family:var(--mono); font-size:10px; color:var(--faint)} .iva .row .track{position:relative; height:8px; border-radius:5px; background:var(--surface-2)}
+  .iva .row .track .act{position:absolute; left:0; top:0; bottom:0; border-radius:5px; background:var(--blue)} .iva .row .track .imp{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--copper)}
+  .iva .row .v{font-family:var(--mono); font-size:10px; text-align:right; color:var(--text)}
+  .foot{background:linear-gradient(180deg,transparent,rgba(201,120,47,.05)); border:1px solid var(--line); border-radius:16px; padding:16px; margin-top:16px; text-align:center}
+  .foot .t{font-family:var(--sora); font-weight:600; font-size:14px} .foot .s{font-size:11.5px; color:var(--muted); margin:6px 0 12px; line-height:1.4}
+
+  /* ===== EXPRESS / BELIEF TICKET ===== */
+  .empty{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; height:100%; padding:40px 24px; gap:10px}
+  .empty .ic{width:56px; height:56px; border-radius:50%; border:1.5px solid var(--line-strong); display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--faint)}
+  .empty h3{font-family:var(--sora); font-weight:700; font-size:17px} .empty p{color:var(--muted); font-size:12.5px; line-height:1.5; max-width:230px}
+  .belief{background:var(--surface); border:1px solid var(--line); border-radius:15px; padding:14px 15px; position:relative; overflow:hidden; margin-top:6px}
+  .belief::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--copper)}
+  .belief .tk{font-family:var(--sora); font-weight:700; font-size:16px} .belief .ev{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:2px}
+  .belief .stmt{font-size:12.5px; margin:11px 0 12px; line-height:1.4} .belief .stmt b{font-family:var(--mono)}
+  .bgrid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px}
+  .bg-cell{background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:8px 9px; text-align:center}
+  .bg-cell .k{font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:var(--faint)} .bg-cell .v{font-family:var(--mono); font-weight:600; font-size:16px; margin-top:4px} .bg-cell.edge .v{color:var(--copper)}
+  .intent{display:flex; flex-direction:column; gap:9px}
+  .intent .opt{display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line-strong); border-radius:13px; padding:12px 13px; transition:.15s; text-align:left; color:var(--text)}
+  .intent .opt:hover{border-color:var(--muted)} .intent .opt.sel{border-color:var(--blue); background:rgba(99,164,209,.08)}
+  .intent .opt .ico{width:28px; height:28px; flex:0 0 auto; border-radius:8px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--copper)}
+  .intent .opt .tx{display:flex; flex-direction:column; flex:1; min-width:0} .intent .opt .tx .t{font-family:var(--sora); font-weight:600; font-size:13px; color:var(--text)} .intent .opt .tx .s{font-size:10.5px; color:var(--muted); margin-top:2px}
+  .intent .opt .rec{margin-left:auto; flex:0 0 auto; font-size:8px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--copper); border:1px solid var(--copper); border-radius:12px; padding:3px 7px}
+  .reveal{display:none} .reveal.show{display:block; animation:fade .35s ease}
+  .struct{background:var(--surface); border:1px solid var(--line-strong); border-radius:14px; padding:13px; margin-bottom:10px; transition:.15s; text-align:left; width:100%; display:block}
+  .struct:hover{border-color:var(--muted)} .struct.sel{border-color:var(--blue)}
+  .struct .top{display:flex; gap:11px} .struct .pl{width:88px; height:54px; flex:0 0 auto; background:var(--surface-2); border:1px solid var(--line); border-radius:8px}
+  .struct .nm{font-family:var(--sora); font-weight:600; font-size:14px} .struct .wy{font-size:11px; color:var(--muted); margin-top:3px; line-height:1.4}
+  .struct .stats{display:flex; flex-wrap:wrap; gap:6px 0; margin-top:10px; font-size:10.5px; color:var(--muted)} .struct .stats .s{padding-right:9px; margin-right:9px; border-right:1px solid var(--line)} .struct .stats .s:last-child{border:0;margin:0;padding:0} .struct .stats b{font-family:var(--mono); color:var(--text); font-weight:500}
+  .crush{display:inline-flex; gap:5px; font-size:9.5px; font-weight:600; padding:3px 8px; border-radius:12px; margin-top:9px}
+  .crush.high{color:var(--neg); border:1px solid rgba(217,104,93,.4); background:rgba(217,104,93,.08)} .crush.low{color:var(--pos); border:1px solid rgba(73,165,121,.4); background:rgba(73,165,121,.06)} .crush.med{color:var(--copper); border:1px solid rgba(201,120,47,.4)}
+  .scn{display:flex; flex-direction:column; gap:8px}
+  .scn .row{background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:11px 13px} .scn .row.hero{border-color:var(--copper); background:rgba(201,120,47,.06)}
+  .scn .row .top{display:flex; justify-content:space-between; align-items:center} .scn .row .sc{font-size:12px; font-weight:600} .scn .row .pnl{font-family:var(--mono); font-weight:600; font-size:14px} .scn .row .ex{font-size:10.5px; color:var(--muted); line-height:1.4; margin-top:5px}
+  .gate{display:flex; align-items:center; gap:10px; background:var(--surface-2); border:1px dashed var(--line-strong); border-radius:11px; padding:11px 13px; margin-top:12px}
+  .gate .ck{width:20px; height:20px; flex:0 0 auto; border-radius:6px; border:1.5px solid var(--muted); display:flex; align-items:center; justify-content:center; font-size:12px; color:transparent} .gate.on .ck{background:var(--pos); border-color:var(--pos); color:#0B1418}
+  .gate .t{font-size:11px; color:var(--muted)} .gate.on .t{color:var(--text)}
+  .disclo{font-size:9.5px; color:var(--faint); line-height:1.5; margin-top:10px; text-align:center}
+
+  /* ===== MANAGE ===== */
+  .pos{background:var(--surface); border:1px solid var(--line); border-radius:15px; padding:15px; margin-bottom:12px}
+  .pos.fresh{border-color:rgba(99,164,209,.4); box-shadow:0 0 0 3px rgba(99,164,209,.08)}
+  .pos .ph{display:flex; align-items:center; gap:9px} .pos .ph .tk{font-family:var(--sora); font-weight:700; font-size:16px} .pos .ph .st{font-size:11px; color:var(--muted)}
+  .pos .ph .badge{margin-left:auto; font-size:9px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:4px 9px; border-radius:12px}
+  .pos .ph .badge.ok{color:var(--pos); border:1px solid rgba(73,165,121,.4)} .pos .ph .badge.warn{color:var(--copper); border:1px solid rgba(201,120,47,.45)}
+  .thesis{background:var(--surface-2); border:1px solid var(--line); border-radius:11px; padding:11px 12px; margin-top:12px} .thesis .k{font-size:8.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint)} .thesis .v{font-family:var(--sora); font-weight:600; font-size:13.5px; margin-top:4px}
+  .monitors{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:11px}
+  .mon{background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:9px 11px} .mon .k{font-size:8.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--faint)} .mon .v{font-family:var(--mono); font-weight:600; font-size:14px; margin-top:4px}
+  .alert{display:flex; align-items:flex-start; gap:9px; margin-top:11px; font-size:11.5px; line-height:1.4; padding:10px 12px; border-radius:10px}
+  .alert.ok{color:var(--muted); background:rgba(73,165,121,.06); border:1px solid rgba(73,165,121,.22)} .alert.warn{color:var(--text); background:rgba(201,120,47,.07); border:1px solid rgba(201,120,47,.35)}
+  .alert b{color:var(--text)}
+  .pln{display:flex; margin-top:11px; font-size:10.5px; color:var(--muted)} .pln .p{padding-right:11px; margin-right:11px; border-right:1px solid var(--line)} .pln .p:last-child{border:0} .pln b{color:var(--text)}
+  .pnl-foot{display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:11px; border-top:1px solid var(--line)} .pnl-foot .lab{font-size:10px; color:var(--faint)} .pnl-foot .val{font-family:var(--mono); font-size:13px}
+  .mgr-empty{font-size:12px; color:var(--faint); text-align:center; padding:18px; border:1px dashed var(--line); border-radius:13px; margin-bottom:12px; line-height:1.5}
+
+  /* ===== LEARN ===== */
+  .cal-hero{background:var(--surface); border:1px solid var(--line); border-radius:15px; padding:16px; margin-top:6px; display:flex; gap:14px; align-items:center}
+  .cal-hero .plot{width:92px; height:92px; flex:0 0 auto}
+  .cal-hero .ct .big{font-family:var(--sora); font-weight:700; font-size:16px; line-height:1.3} .cal-hero .ct .big b{color:var(--copper)}
+  .cal-hero .ct .sub{font-size:11px; color:var(--muted); margin-top:6px; line-height:1.4} .cal-hero .ct .brier{font-family:var(--mono); font-size:11px; color:var(--pos); margin-top:8px}
+  .lstats{display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-top:6px}
+  .lstat{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px; text-align:center} .lstat .k{font-size:8.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--faint)} .lstat .v{font-family:var(--mono); font-weight:600; font-size:20px; margin-top:5px}
+  .edgemap{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px}
+  .erow{display:grid; grid-template-columns:70px 1fr 48px; align-items:center; gap:10px; margin-bottom:9px} .erow:last-child{margin:0} .erow .lbl{font-family:var(--mono); font-size:11px; color:var(--muted)} .erow .bar{height:7px; border-radius:5px; background:var(--surface-2); overflow:hidden} .erow .bar i{display:block; height:100%; border-radius:5px} .erow .val{font-family:var(--mono); font-size:10.5px; text-align:right}
+  .pending{background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--blue); border-radius:12px; padding:12px 13px; margin-bottom:9px} .pending .t{font-size:12px; color:var(--text)} .pending .s{font-family:var(--mono); font-size:10px; color:var(--faint); margin-top:4px}
+
+  /* bottom nav */
+  .nav{flex:0 0 auto; display:flex; border-top:1px solid var(--line); background:var(--bg); padding:8px 6px 16px}
+  .nav.hidden{display:none}
+  .nav button{flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 0; color:var(--faint); position:relative}
+  .nav button .ico{width:22px; height:22px} .nav button .lb{font-size:9.5px; font-weight:600}
+  .nav button.active{color:var(--text)} .nav button.active .ico{color:var(--blue)}
+  .nav button .nd{position:absolute; top:2px; right:50%; margin-right:-15px; width:7px; height:7px; border-radius:50%; background:var(--copper); display:none} .nav button .nd.on{display:block}
+
+  .toast{position:absolute; left:50%; bottom:92px; transform:translateX(-50%) translateY(10px); opacity:0; background:var(--surface-3); border:1px solid var(--line-strong); border-radius:20px; padding:9px 16px; font-size:12px; white-space:nowrap; transition:.25s; z-index:50; pointer-events:none; max-width:88%}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)} .toast b{font-family:var(--mono); color:var(--blue)}
+
+  .legend{max-width:430px; margin-top:22px; color:var(--faint); font-size:11.5px; text-align:center; line-height:1.6} .legend b{color:var(--muted)}
+</style>
+</head>
+<body>
+
+  <div class="head">
+    <div class="eyebrow">The whole product · one build</div>
+    <h1>Old Lucky Dog — Consolidated</h1>
+    <p>Swipe the NVDA driver in Discover → express it → place it → watch it land in Manage and Learn. Tap a setup to open Stock Detail, then <b style="color:var(--text)">Show the work</b> to reach the deep dive. Four tabs, two overlays, one loop.</p>
+  </div>
+
+  <div class="phone">
+    <div class="screen">
+      <div class="notch"></div>
+      <div class="appbar">
+        <span class="back" id="back" onclick="back()">‹</span>
+        <span class="old" id="ab-old">OLD</span>
+        <span class="ttl" id="ab-title" style="display:none">Title</span>
+        <span class="streak" id="ab-streak">🔥 <b>6</b> day streak</span>
+        <span class="ev" id="ab-ev">NVDA · earnings<br>May 28 · in 6d</span>
+      </div>
+
+      <div class="stage">
+
+        <!-- ========== DISCOVER ========== -->
+        <div class="pane active" id="p-discover">
+          <div class="pscroll">
+            <div class="dr">
+              <div class="hi">Morning. The board is open.</div>
+              <div class="sub" id="drSub">3 forecasts logged today · 2 resolve at the close.</div>
+              <div class="bar"><i id="drBar"></i></div>
+              <div class="bsub"><span>Daily Read</span><span id="drCount">3 / 5</span></div>
+            </div>
+
+            <div class="sec-lab">Today's drivers <span class="more">curated · swipe to forecast</span></div>
+            <div class="deck" id="deck"></div>
+            <div class="deckctl" id="deckctl">
+              <button class="cbtn" onclick="commit('left')">◄</button>
+              <button class="cbtn skip" onclick="commit('skip')">skip</button>
+              <span class="deckcount" id="deckcount">1 / 4</span>
+              <button class="cbtn" onclick="commit('right')">►</button>
+            </div>
+
+            <div class="sec-lab">Your setups <span class="more">tap to open</span></div>
+            <button class="opp" onclick="openOverlay('stock')"><span class="tk">NVDA</span><div class="mid"><div class="t">Overpriced premium · earnings in 6d</div><div class="s">rich vs its history · ramp 82nd pct</div></div><span class="im">±6.8%<span>implied</span></span><span class="go">›</span></button>
+            <button class="opp" onclick="toast('Opens UBER stock detail')"><span class="tk">UBER</span><div class="mid"><div class="t">Underpriced move</div><div class="s">14/20 beat implied</div></div><span class="im">±4.2%<span>implied</span></span><span class="go">›</span></button>
+          </div>
+        </div>
+
+        <!-- ========== EXPRESS ========== -->
+        <div class="pane" id="p-express">
+          <div class="pscroll">
+            <div class="empty" id="expressEmpty">
+              <div class="ic">◇</div><h3>No belief yet</h3>
+              <p>Express is downstream. Forecast something in Discover and bring the belief here to translate it into a payoff shape.</p>
+              <button class="btn btn-ghost" style="width:auto; padding:11px 18px; margin-top:6px" onclick="showTab('discover')">Go to Discover</button>
+            </div>
+            <div id="ticket" style="display:none">
+              <div class="sec-lab">Your belief, carried in</div>
+              <div class="belief">
+                <div class="tk">NVDA <span style="font-weight:400; font-size:11px; color:var(--faint)">NVIDIA</span></div>
+                <div class="ev">Earnings · May 28 · AMC · in 6d</div>
+                <div class="stmt">You forecast a <b>65%</b> chance the move exceeds the implied <b>±6.8%</b>.</div>
+                <div class="bgrid"><div class="bg-cell"><div class="k">You</div><div class="v">65%</div></div><div class="bg-cell"><div class="k">Market</div><div class="v">~50%</div></div><div class="bg-cell edge"><div class="k">Edge</div><div class="v">+15</div></div></div>
+              </div>
+              <div class="sec-lab">What kind of payoff do you want?</div>
+              <div class="intent" id="intent">
+                <button class="opt sel" onclick="selIntent(this,'bigger')"><span class="ico">◇</span><span class="tx"><span class="t">Bigger move than priced</span><span class="s">Profit if it moves more than ±6.8%, either way</span></span><span class="rec">Matches</span></button>
+                <button class="opt" onclick="selIntent(this,'dir')"><span class="ico">↗</span><span class="tx"><span class="t">I also lean a direction</span><span class="s">Defined-risk directional spread</span></span></button>
+                <button class="opt" onclick="selIntent(this,'smaller')"><span class="ico">◈</span><span class="tx"><span class="t">Smaller move than priced</span><span class="s">Collect premium if it stays inside</span></span></button>
+              </div>
+              <div class="reveal" id="structWrap"><div class="sec-lab">Shapes that fit · same belief, different payoffs</div><div id="structs"></div></div>
+              <div class="reveal" id="scnWrap"><div class="sec-lab">Before you trade · what each outcome does</div><div class="scn" id="scn"></div><div class="gate" id="gate" onclick="toggleGate()"><span class="ck">✓</span><span class="t">I've reviewed how IV crush affects this structure.</span></div></div>
+              <div class="reveal" id="reviewWrap"><div class="sec-lab">Review &amp; place</div><button class="btn btn-primary" id="placeBtn" disabled onclick="placeTrade()">Place trade →</button><div class="disclo">Defined max loss shown above. Weekly expiry captures the event. Ranking is belief-driven; venue economics never affect what you're shown.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== MANAGE ========== -->
+        <div class="pane" id="p-manage">
+          <div class="pscroll">
+            <div class="sec-lab">Open theses · tracked against thesis, not price</div>
+            <div id="freshPos"></div>
+            <div class="pos">
+              <div class="ph"><span class="tk">META</span><span class="st"> · Long Straddle</span><span class="badge warn">Edge closed</span></div>
+              <div class="thesis"><div class="k">Original thesis</div><div class="v">Actual move beats the implied ±7.6%</div></div>
+              <div class="monitors"><div class="mon"><div class="k">Edge at entry</div><div class="v">+12</div></div><div class="mon"><div class="k">Edge now</div><div class="v neg">+1</div></div><div class="mon"><div class="k">Implied now</div><div class="v">±8.4%</div></div><div class="mon"><div class="k">To event</div><div class="v">2d</div></div></div>
+              <div class="alert warn"><span>⚠</span><span><b>Your edge has closed.</b> Implied move ramped to ±8.4% — the market moved to you. The reason you entered is mostly gone; consider exiting before the print.</span></div>
+              <div class="pln"><span class="p">Hold <b>Through event</b></span><span class="p">Invalidate <b>edge → 0</b></span><span class="p">Max loss <b>$540</b></span></div>
+              <div class="pnl-foot"><span class="lab">Unrealized (secondary to thesis)</span><span class="val pos">+$95</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== LEARN ========== -->
+        <div class="pane" id="p-learn">
+          <div class="pscroll">
+            <div class="sec-lab">Calibration · are you right for the right reasons?</div>
+            <div class="cal-hero">
+              <svg class="plot" viewBox="0 0 100 100">
+                <line x1="12" y1="88" x2="88" y2="12" stroke="rgba(191,199,204,.25)" stroke-width="1" stroke-dasharray="3 3"/>
+                <polyline points="12,84 30,70 48,55 66,34 84,20" fill="none" stroke="var(--copper)" stroke-width="2"/>
+                <circle cx="30" cy="70" r="2.5" fill="var(--copper)"/><circle cx="48" cy="55" r="2.5" fill="var(--copper)"/><circle cx="66" cy="34" r="2.5" fill="var(--copper)"/>
+              </svg>
+              <div class="ct"><div class="big">When you say <b>70%</b>, it happens <b>66%</b>.</div><div class="sub">Close to the line — mild overconfidence on high-conviction calls.</div><div class="brier">Brier vs market: +0.04 better</div></div>
+            </div>
+            <div class="lstats"><div class="lstat"><div class="k">Resolved</div><div class="v">31</div></div><div class="lstat"><div class="k">Good passes</div><div class="v">4</div></div><div class="lstat"><div class="k">Streak</div><div class="v cop">6</div></div></div>
+            <div class="sec-lab">Earnings Edge Map <span class="more">one lens of your score</span></div>
+            <div class="edgemap">
+              <div class="erow"><span class="lbl">Direction</span><div class="bar"><i style="width:72%; background:var(--pos)"></i></div><span class="val">Strong</span></div>
+              <div class="erow"><span class="lbl">Magnitude</span><div class="bar"><i style="width:38%; background:var(--copper)"></i></div><span class="val">Weak</span></div>
+              <div class="erow"><span class="lbl">IV crush</span><div class="bar"><i style="width:55%; background:var(--blue)"></i></div><span class="val">Fair</span></div>
+              <div class="erow"><span class="lbl">Drift</span><div class="bar"><i style="width:66%; background:var(--pos)"></i></div><span class="val">Good</span></div>
+            </div>
+            <p style="font-size:11px; color:var(--faint); line-height:1.5; margin:10px 2px 0">You tend to <b style="color:var(--muted)">overestimate mega-cap move size</b> — watch magnitude calls on names like NVDA.</p>
+            <div class="sec-lab">Awaiting resolution</div>
+            <div id="pendingList"><div class="pending"><div class="t">AAPL · will close higher day-after</div><div class="s">resolves May 1 · pending</div></div></div>
+          </div>
+        </div>
+
+        <!-- ========== OVERLAY: STOCK DETAIL ========== -->
+        <div class="pane" id="o-stock">
+          <div class="pscroll">
+            <div class="card">
+              <span class="ctag"><span class="dot"></span>Overpriced premium · this event</span>
+              <div class="ticker-row"><span class="ticker">NVDA <span class="s">NVIDIA</span></span><span class="evtime">May 28 · <span class="confirmed">AMC</span> · in 6d</span></div>
+              <div class="tabs" id="tabs">
+                <button class="tab active" data-t="implied">Implied move</button><button class="tab" data-t="ramp">IV ramp &amp; crush</button><button class="tab" data-t="iva">Implied vs actual</button><button class="tab" data-t="hist">Historical</button><button class="tab" data-t="setups">Setups</button>
+              </div>
+              <div class="tabpane active" data-p="implied">
+                <div class="bignum"><span class="pm">±</span>6.8<span class="pm">%</span></div><div class="bigsub">implied move · Jun 6 expiry · straddle mid ÷ spot</div>
+                <div class="prob-bridge"><span class="ic">◎</span><span class="txt">Implied odds the move clears ±6.8%: <b>≈50%</b> · clears ±5.1%: <b>≈64%</b></span></div>
+                <div class="oneline">Priced richer than NVDA's own history, but in line with peers reporting this week.</div>
+                <div class="receipts"><span class="r">IV pctile <b>82</b></span><span class="r">ramp <b>82nd</b></span><span class="r">liq <b class="pos">Strong</b></span></div>
+                <button class="dive-link" onclick="openDeep('mod-im')"><span class="ic">⌗</span><span class="tx"><span class="t">See how the priced move evolves</span><span class="s">Deep dive · implied move</span></span><span class="ar">›</span></button>
+              </div>
+              <div class="tabpane" data-p="ramp">
+                <div class="stat3"><div class="s"><div class="k">Ramp now</div><div class="v cop">+38%</div></div><div class="s"><div class="k">Typical T-1</div><div class="v">+42%</div></div><div class="s"><div class="k">Crush T+1</div><div class="v">−38%</div></div></div>
+                <div class="oneline">Most of the typical ramp is already in; IV returns to baseline in ~5 sessions.</div>
+                <button class="dive-link" onclick="openDeep('mod-iv')"><span class="ic">⌗</span><span class="tx"><span class="t">See the full IV term structure</span><span class="s">Deep dive · ramp → crush → normalize</span></span><span class="ar">›</span></button>
+              </div>
+              <div class="tabpane" data-p="iva">
+                <div class="stat3"><div class="s"><div class="k">Beat implied</div><div class="v">7/20</div></div><div class="s"><div class="k">Overpriced</div><div class="v cop">1.4pt</div></div><div class="s"><div class="k">Sample</div><div class="v">20</div></div></div>
+                <div class="oneline">The market has overpaid for this event more often than not.</div>
+                <button class="dive-link" onclick="openDeep('mod-iva')"><span class="ic">⌗</span><span class="tx"><span class="t">See every event, implied vs actual</span><span class="s">Deep dive · vol risk premium</span></span><span class="ar">›</span></button>
+              </div>
+              <div class="tabpane" data-p="hist">
+                <div class="stat3"><div class="s"><div class="k">Median</div><div class="v">±5.1%</div></div><div class="s"><div class="k">P25–P75</div><div class="v">3.2–7.4</div></div><div class="s"><div class="k">Up / Down</div><div class="v">12/8</div></div></div>
+                <div class="oneline">Realized moves cluster inside what's priced, with a fatter upside tail.</div>
+                <button class="dive-link" onclick="openDeep('mod-dist')"><span class="ic">⌗</span><span class="tx"><span class="t">See where ±6.8% sits in realized moves</span><span class="s">Deep dive · move distribution</span></span><span class="ar">›</span></button>
+              </div>
+              <div class="tabpane" data-p="setups">
+                <div class="setup-chips"><span class="pill act">Overpriced premium</span><span class="pill act">Extended IV ramp</span><span class="pill">Peer dislocation</span></div>
+                <div class="oneline" style="margin-top:13px">Two setups detected on this event.</div>
+                <button class="dive-link" onclick="openDeep('mod-iv')"><span class="ic">⌗</span><span class="tx"><span class="t">Audit the ramp behind these setups</span><span class="s">Deep dive · IV term structure</span></span><span class="ar">›</span></button>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:14px" onclick="goExpress()">Form a belief on NVDA →</button>
+          </div>
+        </div>
+
+        <!-- ========== OVERLAY: DEEP DIVE ========== -->
+        <div class="pane" id="o-deep">
+          <div class="lens">
+            <div class="lab">Lens · applies to every chart</div>
+            <div class="row">
+              <div class="seg" id="segLook"><button onclick="setLook(this,4)">4Q</button><button onclick="setLook(this,8)">8Q</button><button onclick="setLook(this,12)">12Q</button><button class="on" onclick="setLook(this,20)">20Q</button></div>
+              <div class="seg cmp" id="segCmp"><button class="on" onclick="setCmp(this,'self')">Self</button><button onclick="setCmp(this,'ind')">vs Industry</button></div>
+            </div>
+          </div>
+          <div class="pscroll" id="deepScroll">
+            <div class="mod" id="mod-iv">
+              <div class="mlab">IV · ramp → crush → normalize</div><div class="mtitle">How volatility builds, breaks, and recovers around the print</div>
+              <div class="here"><span class="pin">◉</span><span class="t">You are here at <b>T-6</b> · IV ramped <b>+38%</b>, <b>82nd pct</b>. Most of the typical ramp is already in.</span></div>
+              <div class="chartwrap"><svg viewBox="0 0 340 180">
+                <line x1="14" y1="40" x2="326" y2="40" stroke="var(--grid)"/><line x1="14" y1="85" x2="326" y2="85" stroke="var(--grid)"/><line x1="14" y1="130" x2="326" y2="130" stroke="var(--grid)"/>
+                <line x1="14" y1="128" x2="326" y2="128" stroke="var(--faint)" stroke-dasharray="3 3"/><text x="16" y="124" fill="var(--faint)" font-size="8" font-family="var(--mono)">baseline IV ~31%</text>
+                <line x1="196" y1="20" x2="196" y2="152" stroke="rgba(201,120,47,.35)"/><text x="199" y="28" fill="var(--copper)" font-size="8" font-family="var(--mono)">PRINT</text>
+                <path d="M20,118 L60,104 L100,84 L140,58 L180,38 L196,40 L210,86 L250,108 L290,120 L320,123 L320,131 L290,128 L250,118 L210,100 L196,52 L180,52 L140,72 L100,98 L60,116 L20,126 Z" fill="rgba(191,199,204,.07)"/>
+                <polyline points="20,122 60,110 100,91 140,65 180,45 196,46 210,93 250,113 290,122 320,127" fill="none" stroke="var(--muted)" stroke-width="1.6"/>
+                <polyline id="indIV" points="20,124 60,114 100,99 140,80 180,62 196,63 210,100 250,116 290,123 320,126" fill="none" stroke="var(--blue)" stroke-width="1.4" stroke-dasharray="4 3" style="display:none"/>
+                <polyline points="20,124 60,112 100,94 140,70 168,52" fill="none" stroke="var(--copper)" stroke-width="2.4"/>
+                <polyline points="168,52 180,44 196,45 210,90" fill="none" stroke="var(--copper)" stroke-width="1.4" stroke-dasharray="3 3" opacity=".6"/>
+                <circle cx="168" cy="52" r="4" fill="var(--copper)" stroke="var(--bg)" stroke-width="1.5"/>
+                <text x="214" y="80" fill="var(--neg)" font-size="8.5" font-family="var(--mono)">crush −38%</text><text x="244" y="103" fill="var(--muted)" font-size="8" font-family="var(--mono)">≈5 sessions</text>
+                <text x="20" y="166" fill="var(--faint)" font-size="8" font-family="var(--mono)">T-30</text><text x="158" y="166" fill="var(--faint)" font-size="8" font-family="var(--mono)">T-1</text><text x="206" y="166" fill="var(--faint)" font-size="8" font-family="var(--mono)">T+1</text><text x="306" y="166" fill="var(--faint)" font-size="8" font-family="var(--mono)">T+10</text>
+              </svg></div>
+              <div class="legend-row"><span class="k"><i style="border-color:var(--copper)"></i>This cycle</span><span class="k"><i style="border-color:var(--muted)"></i><span id="medLbl">20Q</span> median</span><span class="k band"><i style="background:rgba(191,199,204,.12)"></i>p25–p75</span><span class="k indKey" style="display:none"><i style="border-color:var(--blue); border-style:dashed"></i>Industry</span></div>
+              <div class="readout" id="ro1">The ramp is <b>extended</b>, so much of the pre-event vol premium is likely already priced. IV typically crushes <b>~38%</b> and takes ~<b>5 sessions</b> to normalize.<span class="cav">Long premium has to overcome that crush — a position right on direction can still lose if IV stays suppressed while the move plays out; the delta gain has to outrun the vol drag until IV normalizes.</span></div>
+              <div class="method" onclick="this.classList.toggle('open')"><span class="tog">How this is computed</span><div class="body">IV from the event-capturing expiry, interpolated to ~30-day tenor; median and band across the lookback window, aligned by days-to-event. Crush is the T-1 → T+1 change.</div></div>
+            </div>
+            <div class="mod" id="mod-im">
+              <div class="mlab">Implied move · evolution</div><div class="mtitle">How the priced move itself drifts toward the event</div>
+              <div class="here"><span class="pin">◉</span><span class="t">Now the straddle prices <b>±6.8%</b> — <b>≈50%</b> odds it clears, <b>≈64%</b> it clears ±5.1%.</span></div>
+              <div class="chartwrap"><svg viewBox="0 0 340 150">
+                <line x1="14" y1="34" x2="326" y2="34" stroke="var(--grid)"/><line x1="14" y1="74" x2="326" y2="74" stroke="var(--grid)"/><line x1="14" y1="114" x2="326" y2="114" stroke="var(--grid)"/>
+                <text x="16" y="31" fill="var(--faint)" font-size="8" font-family="var(--mono)">±8%</text><text x="16" y="111" fill="var(--faint)" font-size="8" font-family="var(--mono)">±3%</text>
+                <polyline points="24,104 80,96 140,84 200,70 260,56 312,44" fill="none" stroke="var(--muted)" stroke-width="1.6"/>
+                <polyline id="indIM" points="24,108 80,102 140,94 200,84 260,74 312,66" fill="none" stroke="var(--blue)" stroke-width="1.4" stroke-dasharray="4 3" style="display:none"/>
+                <polyline points="24,106 80,97 140,82 200,66 250,56" fill="none" stroke="var(--copper)" stroke-width="2.4"/><polyline points="250,56 312,48" fill="none" stroke="var(--copper)" stroke-width="1.4" stroke-dasharray="3 3" opacity=".6"/>
+                <circle cx="250" cy="56" r="4" fill="var(--copper)" stroke="var(--bg)" stroke-width="1.5"/><text x="214" y="50" fill="var(--copper)" font-size="8.5" font-family="var(--mono)">now ±6.8%</text>
+                <text x="24" y="138" fill="var(--faint)" font-size="8" font-family="var(--mono)">T-30</text><text x="300" y="138" fill="var(--faint)" font-size="8" font-family="var(--mono)">T-1</text>
+              </svg></div>
+              <div class="legend-row"><span class="k"><i style="border-color:var(--copper)"></i>This cycle</span><span class="k"><i style="border-color:var(--muted)"></i>Typical path</span><span class="k indKey" style="display:none"><i style="border-color:var(--blue); border-style:dashed"></i>Industry</span></div>
+              <div class="readout" id="ro2">The priced move tracks <b>slightly above</b> its usual path and is rich versus realized history (median <b>±5.1%</b>). Implied move can keep rising into the print even when IV is flat, then decay fast after.</div>
+              <div class="method" onclick="this.classList.toggle('open')"><span class="tog">How this is computed</span><div class="body">ATM straddle mid ÷ spot for the event expiry, snapshotted each session and aligned by days-to-event across cycles. Probability assumes a roughly log-normal move, skew-adjusted where data allows.</div></div>
+            </div>
+            <div class="mod" id="mod-iva">
+              <div class="mlab">Implied vs actual · the vol risk premium</div><div class="mtitle">Does the market over- or under-price this event?</div>
+              <div class="statbig"><span class="n" id="vrpN">1.4</span><span class="x"><b id="vrpHead">Median 1.4 pts overpriced</b> across the last <span id="vrpN2" class="mono">20</span> events. Actual beat implied <span id="vrpBeat" class="mono">7/20</span> (<span id="vrpPct" class="mono">35%</span>).</span></div>
+              <div class="iva" id="ivaList"></div>
+              <div class="legend-row" style="margin-top:10px"><span class="k"><i style="border-color:var(--blue)"></i>Actual move</span><span class="k"><i style="border-color:var(--copper)"></i>Pre-event implied</span></div>
+              <div class="readout" id="ro3">On balance the market has <b>overpaid</b> for NVDA earnings. But the tails are real: when it beat, it beat hard.<span class="cav">A premium rich on average is not a free short — one large surprise can erase many small wins.</span></div>
+              <div class="method" onclick="this.classList.toggle('open')"><span class="tog">How this is computed</span><div class="body">For each prior event, the T-1 implied move vs the realized close-to-close move. “Overpriced” means implied exceeded actual; the headline is the median of (implied − actual).</div></div>
+            </div>
+            <div class="mod" id="mod-dist">
+              <div class="mlab">Realized moves · distribution</div><div class="mtitle">Where the priced move sits in actual history</div>
+              <div class="here"><span class="pin">◉</span><span class="t">The market prices <b>±6.8%</b> — wider than most realized moves. Only <b>7 of 20</b> cleared it.</span></div>
+              <div class="chartwrap"><svg viewBox="0 0 340 150">
+                <line x1="170" y1="18" x2="170" y2="118" stroke="var(--line-strong)"/><text x="166" y="132" fill="var(--faint)" font-size="8" font-family="var(--mono)">0</text><text x="20" y="132" fill="var(--faint)" font-size="8" font-family="var(--mono)">−12%</text><text x="300" y="132" fill="var(--faint)" font-size="8" font-family="var(--mono)">+12%</text>
+                <g fill="var(--surface-3)"><rect x="44" y="100" width="16" height="18"/><rect x="64" y="86" width="16" height="32"/><rect x="84" y="66" width="16" height="52"/><rect x="104" y="50" width="16" height="68"/><rect x="124" y="60" width="16" height="58"/><rect x="144" y="74" width="16" height="44"/></g>
+                <g fill="var(--surface-3)"><rect x="172" y="70" width="16" height="48"/><rect x="192" y="48" width="16" height="70"/><rect x="212" y="58" width="16" height="60"/><rect x="232" y="78" width="16" height="40"/><rect x="252" y="92" width="16" height="26"/><rect x="272" y="100" width="16" height="18"/><rect x="292" y="106" width="16" height="12"/></g>
+                <line x1="118" y1="18" x2="118" y2="118" stroke="var(--muted)" stroke-dasharray="2 2"/><line x1="222" y1="18" x2="222" y2="118" stroke="var(--muted)" stroke-dasharray="2 2"/>
+                <line x1="104" y1="14" x2="104" y2="118" stroke="var(--copper)" stroke-width="1.5"/><line x1="236" y1="14" x2="236" y2="118" stroke="var(--copper)" stroke-width="1.5"/><text x="120" y="28" fill="var(--copper)" font-size="8" font-family="var(--mono)">priced ±6.8%</text>
+              </svg></div>
+              <div class="legend-row"><span class="k"><i style="border-color:var(--copper)"></i>Implied ±6.8%</span><span class="k"><i style="border-color:var(--muted); border-style:dashed"></i>Median ±5.1%</span></div>
+              <div class="readout">Realized moves cluster <b>inside</b> the priced range, with a fatter <b>upside</b> tail. The copper lines are what you're being asked to pay for.</div>
+              <div class="method" onclick="this.classList.toggle('open')"><span class="tog">How this is computed</span><div class="body">Each bar counts prior events whose realized close-to-close move fell in that bucket. The band is the current priced move; dashed lines are the median absolute move by direction.</div></div>
+            </div>
+            <div class="foot"><div class="t">Seen enough?</div><div class="s">The evidence is here to sharpen a belief — not replace one.</div><button class="btn btn-primary" onclick="goExpress()">Form a belief on NVDA →</button></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- express sheet -->
+      <div class="sheet" id="sheet">
+        <div class="conf"><span class="ic">✓</span><span>Forecast locked &amp; scored. You see <b>more move</b> than the market — edge <b>+15</b>.</span></div>
+        <div class="acts"><button class="btn btn-primary" onclick="sheetExpress()">Express this belief →</button><button class="btn btn-ghost" style="flex:0 0 auto; width:auto; padding:13px 14px" onclick="sheetDismiss()">Keep swiping</button></div>
+      </div>
+
+      <div class="toast" id="toast"></div>
+
+      <div class="nav" id="nav">
+        <button class="active" data-tab="discover" onclick="showTab('discover')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><polygon points="15.5,8.5 10.5,10.5 8.5,15.5 13.5,13.5" fill="currentColor" stroke="none"/></svg><span class="lb">Discover</span><span class="nd" id="nd-discover"></span></button>
+        <button data-tab="express" onclick="showTab('express')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16v4a2 2 0 0 0 0 2v4H4v-4a2 2 0 0 0 0-2z"/><line x1="9" y1="7" x2="9" y2="17" stroke-dasharray="2 2"/></svg><span class="lb">Express</span><span class="nd" id="nd-express"></span></button>
+        <button data-tab="manage" onclick="showTab('manage')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 13h4l2-6 3 12 2.5-8 1.5 4h5"/></svg><span class="lb">Manage</span><span class="nd" id="nd-manage"></span></button>
+        <button data-tab="learn" onclick="showTab('learn')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg><span class="lb">Learn</span><span class="nd" id="nd-learn"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend"><b>One loop, one build:</b> a free forecast always scores into Learn; expressing it opens a thesis in Manage; and any claim drills to the deep-dive module that backs it. The Belief Ticket is the conscience in between.</div>
+
+<script>
+  const TITLES={discover:'Discover',express:'Express',manage:'Manage',learn:'Learn'};
+  const OVL={stock:{t:'NVDA',s:'Stock Detail'},deep:{t:'NVDA',s:'Deep Dive'}};
+  let route='discover', overlay=null, overlayReturn='discover';
+  let hasBelief=false;
+
+  // ---------- router ----------
+  function paint(){
+    ['discover','express','manage','learn'].forEach(t=>document.getElementById('p-'+t).classList.toggle('active', !overlay && route===t));
+    document.getElementById('o-stock').classList.toggle('active', overlay==='stock');
+    document.getElementById('o-deep').classList.toggle('active', overlay==='deep');
+    const nav=document.getElementById('nav');
+    const back=document.getElementById('back'), abOld=document.getElementById('ab-old'), abTtl=document.getElementById('ab-title'), abStreak=document.getElementById('ab-streak'), abEv=document.getElementById('ab-ev');
+    if(overlay){
+      nav.classList.add('hidden'); back.classList.add('show');
+      abOld.style.display='none'; abStreak.style.display='none'; abEv.style.display='none';
+      abTtl.style.display='block'; abTtl.innerHTML=OVL[overlay].t+' <span class="sub">'+OVL[overlay].s+'</span>';
+    } else {
+      nav.classList.remove('hidden'); back.classList.remove('show');
+      abTtl.style.display='none'; abEv.style.display='none';
+      abOld.style.display='block'; abStreak.style.display='inline-flex';
+      document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===route));
+      const nd=document.getElementById('nd-'+route); if(nd) nd.classList.remove('on');
+    }
+  }
+  function showTab(t){ overlay=null; route=t; paint(); document.querySelector('#p-'+t+' .pscroll').scrollTop=0; }
+  function openOverlay(name){ overlayReturn=route; overlay=name; paint(); document.querySelector('#o-'+name+' .pscroll').scrollTop=0; }
+  let prevOverlay=null;
+
+  function toast(html){ const el=document.getElementById('toast'); el.innerHTML=html; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),1800); }
+  function badge(t){ const nd=document.getElementById('nd-'+t); if(nd) nd.classList.add('on'); }
+
+  // ---------- deep link ----------
+  function openDeep(modId){
+    prevOverlay = overlay;           // remember where we came from (stock or null)
+    if(!overlay) overlayReturn = route;
+    overlay='deep'; paint();
+    const target=document.getElementById(modId);
+    requestAnimationFrame(()=>{ target.scrollIntoView({block:'start'}); target.classList.remove('flash'); void target.offsetWidth; target.classList.add('flash'); });
+  }
+  // fix back() to use prevOverlay properly
+  function back(){
+    if(overlay==='deep'){
+      if(prevOverlay==='stock'){ overlay='stock'; }
+      else { overlay=null; route=overlayReturn; }
+      prevOverlay=null;
+    } else {
+      overlay=null; route=overlayReturn;
+    }
+    paint();
+  }
+
+  // ---------- DISCOVER: swipe deck ----------
+  const CARDS=[
+    {expressible:true, tag:'Earnings driver', curated:true, data:true,
+     driver:{ac:'Read-through',nm:'Data-center',dt:'Street guide hot'}, rel:'implies',
+     dep:{ac:'Options',nm:'NVDA',dt:'move ±6.8%'},
+     claim:'The read-through says big. NVDA’s options price only ±6.8%.',
+     gap:'The setup implies the move could run <b>past</b> what’s priced. The market hasn’t followed.',
+     q:'Will NVDA’s actual move beat the implied ±6.8%?',
+     left:{l:'Smaller',s:'stays inside'}, right:{l:'Bigger',s:'exceeds implied'}},
+    {expressible:false, tag:'Macro · two markets', curated:true,
+     driver:{ac:'Macro',nm:'CPI',dt:'prints Thu 8:30'}, rel:'splits',
+     dep:{ac:'Opt ⇄ Pred',nm:'SPY ⇄ Kalshi',dt:'same print'},
+     claim:'SPY options price a ±1.1% CPI move. The prediction market gives 60% odds of a hot print.',
+     gap:'Two markets, one event — and they <b>disagree</b>. One is mispriced.',
+     q:'Does the options move underprice a hot print?',
+     left:{l:'Cool', s:'opt is right'}, right:{l:'Hot', s:'opt underprices'}},
+    {expressible:false, tag:'Crypto driver', curated:true,
+     driver:{ac:'Crypto',nm:'BTC perp',dt:'funding −0.06%'}, rel:'pressures',
+     dep:{ac:'Crypto',nm:'BTC spot',dt:'unchanged'},
+     claim:'BTC perp funding flipped deeply negative — shorts are paying. Spot hasn’t moved.',
+     gap:'Crowded shorts + flat spot is <b>squeeze fuel</b> — or a real leg down.',
+     q:'Squeeze higher or continuation lower over 24h?',
+     left:{l:'Leg down', s:'shorts right'}, right:{l:'Squeeze', s:'shorts trapped'}},
+    {expressible:false, tag:'Supply-chain read-through', curated:true,
+     driver:{ac:'Equity',nm:'TSMC',dt:'capex +18%'}, rel:'leads',
+     dep:{ac:'Equity',nm:'AAPL',dt:'top customer'},
+     claim:'TSMC raised capex sharply. The market hasn’t moved its largest customer’s setup.',
+     gap:'Supplier signal usually <b>leads</b> the customer. The read-through hasn’t shown up.',
+     q:'Does the TSMC signal pull AAPL with it?',
+     left:{l:'Noise', s:'no follow'}, right:{l:'Follows', s:'read-through'}},
+  ];
+  const arrowSVG='<svg viewBox="0 0 36 11"><line x1="0" y1="5.5" x2="28" y2="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M26,2 L34,5.5 L26,9" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
+  let idx=0, todayCount=3;
+
+  function cardHTML(c){
+    return `<div class="stamp left">${c.left.l.toUpperCase()}</div><div class="stamp right">${c.right.l.toUpperCase()}</div>
+      <div class="tagrow"><span class="ctag"><span class="dot"></span>${c.tag}</span>${c.data?'<button class="datapill" onclick="event.stopPropagation();openDeep(\'mod-iva\')">⌗ data</button>':''}${c.curated?'<span class="curated">Curated</span>':''}</div>
+      <div class="chain"><div class="node"><div class="ac">${c.driver.ac}</div><div class="nm">${c.driver.nm}</div><div class="dt">${c.driver.dt}</div></div><div class="arrow"><span class="rel">${c.rel}</span>${arrowSVG}</div><div class="node"><div class="ac">${c.dep.ac}</div><div class="nm">${c.dep.nm}</div><div class="dt">${c.dep.dt}</div></div></div>
+      <div class="claim">${c.claim}</div><div class="gap">${c.gap}</div>
+      <div class="spacer"></div>
+      <div class="qline">${c.q}</div>
+      <div class="outcomes"><div class="oc left"><span class="arr">◄</span><span class="l">${c.left.l}</span><span class="s">${c.left.s}</span></div><div class="oc right"><span class="arr">►</span><span class="l">${c.right.l}</span><span class="s">${c.right.s}</span></div></div>`;
+  }
+  function renderDeck(){
+    const deck=document.getElementById('deck'); deck.innerHTML='';
+    if(idx>=CARDS.length){ deck.innerHTML='<div class="swipe-card" style="align-items:center; justify-content:center; text-align:center"><div><div style="font-size:26px; color:var(--copper)">◆</div><div style="font-family:var(--sora); font-weight:700; font-size:18px; margin-top:8px">Caught up.</div><div style="font-size:12px; color:var(--muted); margin-top:6px; max-width:200px">Every call scored into Learn. Come back tomorrow for a fresh slate.</div></div></div>';
+      document.getElementById('deckctl').style.visibility='hidden'; return; }
+    document.getElementById('deckctl').style.visibility='visible';
+    for(let j=Math.min(idx+2,CARDS.length-1); j>=idx; j--){
+      const el=document.createElement('div'); el.className='swipe-card'+(j===idx?'':(j===idx+1?' behind':' behind2'));
+      el.innerHTML=cardHTML(CARDS[j]); deck.appendChild(el);
+      if(j===idx) attachDrag(el);
+    }
+    document.getElementById('deckcount').textContent=(idx+1)+' / '+CARDS.length;
+  }
+  function attachDrag(card){
+    let sx=0,sy=0,drag=false; const TH=80;
+    card.addEventListener('pointerdown',e=>{ if(e.target.closest('.datapill')) return; drag=true; sx=e.clientX; sy=e.clientY; card.setPointerCapture(e.pointerId); card.style.transition='none'; });
+    card.addEventListener('pointermove',e=>{ if(!drag) return; const dx=e.clientX-sx, dy=e.clientY-sy; card.style.transform=`translate(${dx}px,${dy*0.4}px) rotate(${dx*0.05}deg)`; card.classList.toggle('tilt-right',dx>40); card.classList.toggle('tilt-left',dx<-40); });
+    card.addEventListener('pointerup',e=>{ if(!drag) return; drag=false; const dx=e.clientX-sx, dy=e.clientY-sy;
+      if(dx>TH) commit('right'); else if(dx<-TH) commit('left'); else if(dy<-TH) commit('skip');
+      else { card.style.transition='transform .25s ease'; card.style.transform=''; card.classList.remove('tilt-left','tilt-right'); } });
+  }
+  function flyOff(side){
+    const front=document.querySelector('#deck .swipe-card:not(.behind):not(.behind2)'); if(!front) return;
+    const x=side==='right'?600:side==='left'?-600:0, y=side==='skip'?-700:0, rot=side==='right'?18:side==='left'?-18:0;
+    front.style.transition='transform .3s ease, opacity .3s ease'; front.style.transform=`translate(${x}px,${y}px) rotate(${rot}deg)`; front.style.opacity='0';
+  }
+  function logForecast(c,side){
+    if(side==='skip') return;
+    todayCount++; document.getElementById('drCount').textContent=Math.min(todayCount,5)+' / 5';
+    document.getElementById('drBar').style.width=Math.min(todayCount/5*100,100)+'%';
+    document.getElementById('drSub').textContent=todayCount+' forecasts logged today · resolve at the close.';
+    const pend=document.getElementById('pendingList');
+    const d=document.createElement('div'); d.className='pending';
+    d.innerHTML=`<div class="t">${c.dep.nm} · ${c.q.replace('?','')}</div><div class="s">just forecast · pending</div>`;
+    pend.prepend(d); badge('learn');
+  }
+  function commit(side){
+    if(idx>=CARDS.length) return;
+    const c=CARDS[idx];
+    logForecast(c,side);
+    if(side==='right' && c.expressible){
+      flyOff(side);
+      setTimeout(()=>{ idx++; renderDeck(); document.getElementById('sheet').classList.add('show'); },180);
+      return;
+    }
+    flyOff(side);
+    toast(side==='skip'?'Skipped':'Forecast scored · <b>now in Learn</b>');
+    setTimeout(()=>{ idx++; renderDeck(); },200);
+  }
+  function sheetExpress(){ document.getElementById('sheet').classList.remove('show'); goExpress(); }
+  function sheetDismiss(){ document.getElementById('sheet').classList.remove('show'); }
+
+  // ---------- stock detail tabs ----------
+  document.getElementById('tabs').addEventListener('click',e=>{ const b=e.target.closest('.tab'); if(!b) return;
+    document.querySelectorAll('#tabs .tab').forEach(t=>t.classList.remove('active')); b.classList.add('active');
+    document.querySelectorAll('#o-stock .tabpane').forEach(p=>p.classList.toggle('active',p.dataset.p===b.dataset.t)); });
+
+  // ---------- EXPRESS ----------
+  function goExpress(){ hasBelief=true; document.getElementById('expressEmpty').style.display='none'; document.getElementById('ticket').style.display='block'; renderStructs(); showTab('express'); toast('Belief carried into the ticket'); }
+  function pl(t){ const W=88,H=54,m=H/2,ax=`<line x1="2" y1="${m}" x2="${W-2}" y2="${m}" stroke="rgba(191,199,204,.18)"/>`,g='var(--pos)';
+    if(t==='straddle')return svg(W,H,ax+ln([[4,7],[32,7],[44,48],[56,7],[84,7]],'var(--text)')+sg([[4,7],[32,7]],g)+sg([[56,7],[84,7]],g)+dt(37,m)+dt(51,m));
+    if(t==='strangle')return svg(W,H,ax+ln([[4,9],[26,9],[37,46],[51,46],[62,9],[84,9]],'var(--text)')+dt(31,m)+dt(57,m));
+    if(t==='dir')return svg(W,H,ax+ln([[4,46],[37,46],[58,12],[84,12]],'var(--text)')+sg([[58,12],[84,12]],g)+dt(48,m));
+    if(t==='smaller')return svg(W,H,ax+ln([[4,46],[22,46],[35,14],[53,14],[66,46],[84,46]],'var(--text)')+sg([[31,m],[57,m]],g)+dt(29,m)+dt(59,m));
+    return svg(W,H,ax); }
+  function svg(w,h,i){return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%">${i}</svg>`}
+  function ln(p,c){return `<polyline points="${p.map(x=>x.join(',')).join(' ')}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"/>`}
+  function sg(p,c){return `<polyline points="${p.map(x=>x.join(',')).join(' ')}" fill="none" stroke="${c}" stroke-width="2"/>`}
+  function dt(x,y){return `<circle cx="${x}" cy="${y}" r="2.2" fill="var(--copper)"/>`}
+  const STRUCTS={bigger:[{pl:'straddle',nm:'Long Straddle',wy:'Buy the ATM call and put. Profits if the move beats ±6.8% either way.',stats:[['Breakeven','±7.6%'],['Max loss','$612'],['Max gain','open']],crush:'high'},{pl:'strangle',nm:'Long Strangle',wy:'Cheaper, needs an even bigger move to pay.',stats:[['Breakeven','±9.1%'],['Max loss','$388'],['Max gain','open']],crush:'high'},{pl:'dir',nm:'Directional Debit Spread',wy:'If you lean up: defined risk, far less crush exposure.',stats:[['Breakeven','+3.4%'],['Max loss','$240'],['Max gain','$260']],crush:'low'}],
+    dir:[{pl:'dir',nm:'Call Debit Spread',wy:'Bullish, defined risk and reward. Lower crush exposure.',stats:[['Breakeven','+3.4%'],['Max loss','$240'],['Max gain','$260']],crush:'low'},{pl:'straddle',nm:'Long Straddle',wy:'Unsure on direction but sure on size? Stay non-directional.',stats:[['Breakeven','±7.6%'],['Max loss','$612'],['Max gain','open']],crush:'high'}],
+    smaller:[{pl:'smaller',nm:'Iron Condor',wy:'Collect premium if NVDA stays inside the implied range.',stats:[['Profit zone','±5.0%'],['Max gain','$180'],['Max loss','$320']],crush:'low'}]};
+  const SCN=[{sc:'Flat, IV crushes',pnl:'−$612',neg:true,ex:'No move; vega and time both work against long premium.'},{sc:'Up < implied, IV crushes',pnl:'−$210',neg:true,hero:true,ex:'Right direction — still a loss. The move didn’t clear what you paid, and crush did the rest.'},{sc:'Up > implied, IV crushes',pnl:'+$540',neg:false,ex:'The move beat the premium even after crush. The thesis pays.'},{sc:'Expected move, larger crush',pnl:'−$120',neg:true,ex:'Move was ballpark, but vol fell harder than usual, so it bled.'}];
+  let intent='bigger';
+  function selIntent(btn,key){ intent=key; document.querySelectorAll('#intent .opt').forEach(o=>o.classList.remove('sel')); btn.classList.add('sel'); renderStructs(); document.getElementById('scnWrap').classList.remove('show'); document.getElementById('reviewWrap').classList.remove('show'); }
+  function renderStructs(){ const wrap=document.getElementById('structs'); wrap.innerHTML='';
+    (STRUCTS[intent]||[]).forEach(s=>{ const stats=s.stats.map(x=>`<span class="s">${x[0]} <b>${x[1]}</b></span>`).join(''); const lab=s.crush==='high'?'High IV-crush risk':s.crush==='med'?'Some crush risk':'Low crush risk';
+      const b=document.createElement('button'); b.className='struct'; b.onclick=()=>selStruct(b);
+      b.innerHTML=`<div class="top"><div class="pl">${pl(s.pl)}</div><div><div class="nm">${s.nm}</div><div class="wy">${s.wy}</div></div></div><div class="stats">${stats}</div><span class="crush ${s.crush}">${s.crush==='low'?'✓':'⚠'} ${lab}</span>`;
+      wrap.appendChild(b); });
+    document.getElementById('structWrap').classList.add('show'); }
+  function selStruct(el){ document.querySelectorAll('.struct').forEach(s=>s.classList.remove('sel')); el.classList.add('sel');
+    const wrap=document.getElementById('scn'); wrap.innerHTML='';
+    SCN.forEach(s=>{ const r=document.createElement('div'); r.className='row'+(s.hero?' hero':''); r.innerHTML=`<div class="top"><span class="sc">${s.sc}</span><span class="pnl ${s.neg?'neg':'pos'}">${s.pnl}</span></div><div class="ex">${s.ex}</div>`; wrap.appendChild(r); });
+    document.getElementById('scnWrap').classList.add('show'); document.getElementById('reviewWrap').classList.add('show');
+    document.getElementById('gate').classList.remove('on'); document.getElementById('placeBtn').disabled=true;
+    setTimeout(()=>document.getElementById('scnWrap').scrollIntoView({behavior:'smooth',block:'start'}),80); }
+  function toggleGate(){ const g=document.getElementById('gate'); const on=!g.classList.contains('on'); g.classList.toggle('on',on); document.getElementById('placeBtn').disabled=!on; }
+  function placeTrade(){
+    document.getElementById('freshPos').innerHTML=`<div class="pos fresh"><div class="ph"><span class="tk">NVDA</span><span class="st"> · Long Straddle</span><span class="badge ok">On thesis</span></div><div class="thesis"><div class="k">Original thesis</div><div class="v">Actual move beats the implied ±6.8%</div></div><div class="monitors"><div class="mon"><div class="k">Edge at entry</div><div class="v">+15</div></div><div class="mon"><div class="k">Edge now</div><div class="v pos">+15</div></div><div class="mon"><div class="k">IV ramp</div><div class="v cop">+38%</div></div><div class="mon"><div class="k">To event</div><div class="v">6d</div></div></div><div class="alert ok"><span>●</span><span><b>Thesis intact.</b> Implied move holding at ±6.8%, your edge unchanged. We’ll alert you if the gap closes or the date moves.</span></div><div class="pln"><span class="p">Hold <b>Through event</b></span><span class="p">Invalidate <b>edge → 0</b></span><span class="p">Max loss <b>$612</b></span></div><div class="pnl-foot"><span class="lab">Unrealized (secondary to thesis)</span><span class="val">$0</span></div></div>`;
+    badge('manage'); showTab('manage'); toast('Position opened · <b>tracked in Manage</b>');
+  }
+
+  // ---------- DEEP DIVE lens ----------
+  const EVENTS=[['Q1’26',6.8,3.0],['Q4’25',7.7,8.9],['Q3’25',6.2,4.1],['Q2’25',6.5,7.3],['Q1’25',7.1,5.2],['Q4’24',8.0,11.4],['Q3’24',6.0,4.8],['Q2’24',6.6,5.9],['Q1’24',7.4,6.1],['Q4’23',7.9,9.2],['Q3’23',6.3,3.7],['Q2’23',6.8,8.4],['Q1’23',7.0,5.5],['Q4’22',8.2,6.4],['Q3’22',6.1,4.2],['Q2’22',6.9,7.1],['Q1’22',7.3,5.0],['Q4’21',7.6,9.0],['Q3’21',6.4,4.6],['Q2’21',6.7,5.8]];
+  const VRP={4:[1.6,'2/4','50%'],8:[1.3,'3/8','38%'],12:[1.5,'4/12','33%'],20:[1.4,'7/20','35%']};
+  let look=20;
+  function renderIva(){ const list=document.getElementById('ivaList'); list.innerHTML=''; const max=12;
+    EVENTS.slice(0,look).forEach(([q,imp,act])=>{ const beat=act>imp; const row=document.createElement('div'); row.className='row';
+      row.innerHTML=`<span class="q">${q}</span><div class="track"><div class="act" style="width:${(act/max*100).toFixed(0)}%"></div><div class="imp" style="left:${(imp/max*100).toFixed(0)}%"></div></div><span class="v ${beat?'pos':''}">${act.toFixed(1)} / ${imp.toFixed(1)}</span>`; list.appendChild(row); });
+    const [med,beat,pct]=VRP[look]; document.getElementById('vrpN').textContent=med.toFixed(1); document.getElementById('vrpHead').textContent=`Median ${med.toFixed(1)} pts overpriced`; document.getElementById('vrpN2').textContent=look; document.getElementById('vrpBeat').textContent=beat; document.getElementById('vrpPct').textContent=pct; }
+  function setLook(btn,n){ look=n; document.querySelectorAll('#segLook button').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); document.getElementById('medLbl').textContent=n+'Q'; renderIva(); }
+  function setCmp(btn,m){ document.querySelectorAll('#segCmp button').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); const show=m==='ind';
+    document.getElementById('indIV').style.display=show?'block':'none'; document.getElementById('indIM').style.display=show?'block':'none'; document.querySelectorAll('.indKey').forEach(k=>k.style.display=show?'inline-flex':'none');
+    document.getElementById('ro1').innerHTML = show?`NVDA’s ramp is <b>steeper</b> than the semiconductor average and crushes harder — its vol is more event-concentrated than peers.<span class="cav">Comparing to industry normalizes for absolute vol, so a high-vol name and a calmer peer are on the same footing.</span>`:`The ramp is <b>extended</b>, so much of the pre-event vol premium is likely already priced. IV typically crushes <b>~38%</b> and takes ~<b>5 sessions</b> to normalize.<span class="cav">Long premium has to overcome that crush — a position right on direction can still lose if IV stays suppressed while the move plays out; the delta gain has to outrun the vol drag until IV normalizes.</span>`;
+    document.getElementById('ro2').innerHTML = show?`NVDA’s priced move is <b>well above</b> the semiconductor median — the high-implied name in its cohort this cycle.`:`The priced move tracks <b>slightly above</b> its usual path and is rich versus realized history (median <b>±5.1%</b>). Implied move can keep rising into the print even when IV is flat, then decay fast after.`; }
+
+  // init
+  renderDeck(); renderStructs(); renderIva(); paint();
+</script>
+</body>
+</html>

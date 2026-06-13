@@ -129,6 +129,119 @@ body {
   letter-spacing: .04em;
 }
 
+/* ---- Flagship card ---- */
+.hub-flagship {
+  background: var(--color-kennel-black);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xl);
+  position: relative;
+  overflow: hidden;
+}
+.hub-flagship::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(80% 120% at 100% 0%, rgba(201,120,47,0.18) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hub-flagship-label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--color-lucky-copper);
+  margin-bottom: var(--space-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.hub-flagship-label::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-lucky-copper);
+}
+.hub-flagship-title {
+  font-family: var(--font-headline);
+  font-weight: 800;
+  font-size: 26px;
+  color: #F5F3EE;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+  margin-bottom: var(--space-sm);
+}
+.hub-flagship-desc {
+  font-size: 13.5px;
+  color: rgba(191,199,204,0.80);
+  line-height: 1.55;
+  max-width: 480px;
+}
+.hub-flagship-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+.hub-flagship-tag {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(191,199,204,0.55);
+  border: 1px solid rgba(191,199,204,0.14);
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+}
+.hub-flagship-cta {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-md);
+}
+.hub-flagship-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-kennel-black);
+  background: var(--color-lucky-copper);
+  padding: 14px 24px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  letter-spacing: .01em;
+  transition: filter .15s;
+  white-space: nowrap;
+}
+.hub-flagship-open:hover { filter: brightness(1.08); }
+.hub-flagship-note {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(191,199,204,0.38);
+  letter-spacing: .04em;
+  text-align: right;
+}
+@media (max-width: 720px) {
+  .hub-flagship { flex-direction: column; align-items: flex-start; }
+  .hub-flagship-cta { align-items: flex-start; width: 100%; }
+  .hub-flagship-open { width: 100%; justify-content: center; }
+  .hub-flagship-note { text-align: left; }
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 720px) {
   .hub-header { padding: var(--space-lg); }
@@ -160,7 +273,28 @@ body {
     <button class="hub-clear-btn" onclick="OLD.state.clearAll(); location.reload();" style="white-space:nowrap">Clear</button>
   </div>
 
-  <p class="hub-section-label">6 prototypes &middot; click any card to open</p>
+  <!-- Flagship -->
+  <div class="hub-flagship">
+    <div>
+      <div class="hub-flagship-label">Flagship build &middot; full product loop</div>
+      <div class="hub-flagship-title">Consolidated View</div>
+      <div class="hub-flagship-desc">The whole product in one build &mdash; Discover, Express, Manage, and Learn all wired together. Swipe an earnings driver, form a belief, pick a structure, place a trade, and watch it land in Manage and score into Learn. Two overlays, one loop.</div>
+      <div class="hub-flagship-tags">
+        <span class="hub-flagship-tag">Discover</span>
+        <span class="hub-flagship-tag">Express</span>
+        <span class="hub-flagship-tag">Manage</span>
+        <span class="hub-flagship-tag">Learn</span>
+        <span class="hub-flagship-tag">Stock detail</span>
+        <span class="hub-flagship-tag">Deep dive</span>
+      </div>
+    </div>
+    <div class="hub-flagship-cta">
+      <a href="protos/earnings_view.html" class="hub-flagship-open">Launch &rarr;</a>
+      <span class="hub-flagship-note">Self-contained &middot; no shared state required</span>
+    </div>
+  </div>
+
+  <p class="hub-section-label">6 individual prototypes &middot; click any card to open</p>
 
   <div class="hub-grid">
 
