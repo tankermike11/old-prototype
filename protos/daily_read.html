@@ -4,18 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Old Lucky Dog — Daily Read</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<script src="../shared.js"></script>
 <style>
 :root{
-  --bg:#101114; --surface:#161A1E; --surface-2:#1B2026;
-  --text:#F5F3EE; --muted:#BFC7CC; --faint:#79828A;
-  --copper:#C9782F; --copper-bright:#E59A4D; --blue:#63A4D1;
-  --line:rgba(191,199,204,0.10); --line-2:rgba(191,199,204,0.16);
-  --sora:'Sora','Verdana',sans-serif;
-  --inter:'Inter',system-ui,-apple-system,sans-serif;
-  --mono:'IBM Plex Mono','Consolas',monospace;
+  --bg: var(--dark-bg);
+  --surface: var(--dark-surface);
+  --surface-2: var(--dark-surface-2);
+  --text: var(--dark-text);
+  --muted: var(--dark-muted);
+  --faint: var(--dark-faint);
+  --copper: var(--dark-copper);
+  --copper-bright: var(--dark-copper-bright);
+  --blue: var(--dark-blue);
+  --line: var(--dark-line);
+  --line-2: var(--dark-line-2);
+  --sora: var(--font-headline);
+  --inter: var(--font-body);
+  --mono: var(--font-mono);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -184,6 +190,11 @@ body{
         <span style="width:6px"></span><span class="batt"></span>
       </span>
     </div>
+    <nav class="old-topnav">
+      <a href="../index.html" class="old-topnav-logo" style="font-family:var(--font-headline);font-weight:800;font-size:13px;color:var(--dark-copper);text-decoration:none;letter-spacing:.04em">OLD</a>
+      <span class="old-topnav-title">Daily Read</span>
+      <button class="old-topnav-back" onclick="OLD.nav.back()">&#8592; Back</button>
+    </nav>
 
     <div class="screen">
       <div class="appbar">
@@ -387,6 +398,24 @@ body{
       else return;
       e.preventDefault();
       you=Math.max(0,Math.min(100,you+d)); render();
+    });
+
+    // --- express belief → Belief Ticket ---
+    var expressBtn=document.createElement('button');
+    expressBtn.className='express-btn';
+    expressBtn.textContent='Express this belief →';
+    card.appendChild(expressBtn);
+    expressBtn.addEventListener('click',function(){
+      var q=card.querySelector('.q').textContent;
+      var sub=(card.querySelector('.sub')||{textContent:''}).textContent;
+      var ticker=sub.split('·')[0].trim()||'Unknown';
+      OLD.state.set('daily_read_selection',{
+        question:q, ticker:ticker,
+        implied_prob:market, user_prob:you,
+        asset_class:sub.trim(),
+        direction:you>market?'up':'down'
+      });
+      OLD.nav.goTo('belief_ticket');
     });
   });
 })();

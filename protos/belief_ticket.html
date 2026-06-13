@@ -4,18 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Old Lucky Dog — Belief Ticket</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<script src="../shared.js"></script>
 <style>
 :root{
-  --bg:#101114; --surface:#161A1E; --surface-2:#1B2026;
-  --text:#F5F3EE; --muted:#BFC7CC; --faint:#79828A;
-  --copper:#C9782F; --copper-bright:#E59A4D; --blue:#63A4D1; --green:#49A579; --red:#D9685D;
-  --line:rgba(191,199,204,0.10); --line-2:rgba(191,199,204,0.16);
-  --sora:'Sora','Verdana',sans-serif;
-  --inter:'Inter',system-ui,-apple-system,sans-serif;
-  --mono:'IBM Plex Mono','Consolas',monospace;
+  --bg: var(--dark-bg);
+  --surface: var(--dark-surface);
+  --surface-2: var(--dark-surface-2);
+  --text: var(--dark-text);
+  --muted: var(--dark-muted);
+  --faint: var(--dark-faint);
+  --copper: var(--dark-copper);
+  --copper-bright: var(--dark-copper-bright);
+  --blue: var(--dark-blue);
+  --green: var(--dark-green);
+  --red: var(--dark-red);
+  --line: var(--dark-line);
+  --line-2: var(--dark-line-2);
+  --sora: var(--font-headline);
+  --inter: var(--font-body);
+  --mono: var(--font-mono);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -195,6 +203,11 @@ body{font-family:var(--inter);
     <div class="statusbar"><span>9:41</span>
       <span class="glyphs"><span class="bar b1"></span><span class="bar b2"></span><span class="bar b3"></span><span class="bar b4"></span><span style="width:6px"></span><span class="batt"></span></span>
     </div>
+    <nav class="old-topnav">
+      <a href="../index.html" class="old-topnav-logo" style="font-family:var(--font-headline);font-weight:800;font-size:13px;color:var(--dark-copper);text-decoration:none;letter-spacing:.04em">OLD</a>
+      <span class="old-topnav-title">Belief Ticket</span>
+      <button class="old-topnav-back" onclick="OLD.nav.back()">&#8592; Back</button>
+    </nav>
 
     <div class="tophead">
       <div class="thbar">
@@ -483,6 +496,61 @@ body{font-family:var(--inter);
   renderTiles(); renderSwitch(); renderEngine();
   sliders.forEach(initSlider); setBudget(600); renderConscience();
   showStep(1);
+
+  // --- Read incoming state from daily_read or graduation_bridge ---
+  (function(){
+    var sel = OLD.state.get('daily_read_selection') || OLD.state.get('graduation_bridge_cta');
+    if(sel){
+      // Pre-populate the recap chip with incoming question context
+      var rqEl = document.querySelector('.recap .rq');
+      var rnumsEl = document.querySelector('.recap .rnums .rg');
+      var rsubEl = document.querySelector('.recap .rnums .rsub');
+      if(rqEl && sel.question){
+        rqEl.innerHTML = '<b>' + sel.ticker + '</b> &mdash; ' + sel.question.substring(0,60)+(sel.question.length>60?'…':'');
+      }
+      if(rnumsEl && sel.user_prob!=null && sel.implied_prob!=null){
+        var gap = sel.user_prob - sel.implied_prob;
+        rnumsEl.textContent = (gap>0?'+':'')+gap;
+        if(rsubEl) rsubEl.textContent = 'YOU '+sel.user_prob+' · MKT '+sel.implied_prob;
+      }
+      // Update belief constant to incoming user_prob
+      if(sel.user_prob != null) BELIEF = sel.user_prob;
+    }
+
+    var amend = OLD.state.get('thesis_monitor_review');
+    if(amend){
+      // Amending an existing position – pre-fill from monitor context
+      var rqEl2 = document.querySelector('.recap .rq');
+      if(rqEl2 && amend.original_thesis) rqEl2.innerHTML = '<b>Amending:</b> ' + amend.original_thesis.substring(0,60);
+    }
+  })();
+
+  // --- Write state when ticket is placed → thesis_monitor ---
+  var origActOnclick = act.onclick;
+  act.onclick = function(){
+    if(state.placed) return;
+    if(state.step < 3){ showStep(state.step+1); return; }
+    // Final placement
+    state.placed = true; act.classList.add('placed'); act.textContent = '✓ Placed'; act.disabled = true;
+    fhint.textContent = 'Now tracked by your Thesis Monitor — it watches your reason ($110k), not the ticks.';
+    var t = document.getElementById('toast');
+    t.innerHTML = 'Working. Moved to <b style="color:var(--copper)">Manage</b> — your thesis, not the ticks.';
+    t.classList.add('show');
+
+    OLD.state.set('belief_ticket_submission', {
+      ticker: (OLD.state.get('daily_read_selection')||{ticker:'BTC'}).ticker,
+      user_prob: BELIEF,
+      payoff_pref: state.shape,
+      instrument: state.selected,
+      size: state.budget,
+      thesis_text: 'Placed via Belief Ticket &mdash; ' + new Date().toLocaleTimeString()
+    });
+
+    setTimeout(function(){
+      t.classList.remove('show');
+      OLD.nav.goTo('thesis_monitor');
+    }, 2200);
+  };
 })();
 </script>
 </body>

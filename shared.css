@@ -1,0 +1,235 @@
+/* ================================================================
+   OLD Prototype Hub — Shared Design Tokens & Utilities
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+/* ---- Brand tokens + semantic UI (light mode / hub default) ---- */
+:root {
+  /* Core palette */
+  --color-kennel-black:  #0D1B1E;
+  --color-lucky-copper:  #B87333;
+  --color-signal-blue:   #3A7CA5;
+  --color-bone:          #F5F3EE;
+  --color-deep-teal:     #0F4D4A;
+  --color-ledger-green:  #2F8F63;
+
+  /* Light UI semantics */
+  --color-bg:             #F5F3EE;
+  --color-surface:        #FFFFFF;
+  --color-text-primary:   #0D1B1E;
+  --color-text-secondary: #4A5860;
+  --color-accent:         #B87333;
+  --color-accent-blue:    #3A7CA5;
+  --color-positive:       #2F8F63;
+  --color-negative:       #C24A43;
+
+  /* Typography */
+  --font-headline: 'Sora', sans-serif;
+  --font-body:     'Inter', sans-serif;
+  --font-mono:     'IBM Plex Mono', monospace;
+
+  /* Spacing scale */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  40px;
+  --space-2xl: 64px;
+
+  /* Border radius */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   16px;
+  --radius-pill: 100px;
+
+  /* Shadows */
+  --shadow-card:     0 1px 4px rgba(13,27,30,0.08), 0 4px 16px rgba(13,27,30,0.06);
+  --shadow-elevated: 0 4px 20px rgba(13,27,30,0.12);
+
+  /* ---- Dark UI tokens — used by phone-mockup proto screens ---- */
+  --dark-bg:           #101114;
+  --dark-surface:      #161A1E;
+  --dark-surface-2:    #1B2026;
+  --dark-text:         #F5F3EE;
+  --dark-muted:        #BFC7CC;
+  --dark-faint:        #79828A;
+  --dark-copper:       #C9782F;
+  --dark-copper-bright:#E59A4D;
+  --dark-blue:         #63A4D1;
+  --dark-green:        #49A579;
+  --dark-red:          #D9685D;
+  --dark-line:         rgba(191,199,204,0.10);
+  --dark-line-2:       rgba(191,199,204,0.16);
+}
+
+/* ---- Global reset ---- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Utility classes ---- */
+.font-headline { font-family: var(--font-headline); }
+.font-mono     { font-family: var(--font-mono); }
+.text-accent   { color: var(--color-accent); }
+.text-positive { color: var(--color-positive); }
+.text-negative { color: var(--color-negative); }
+
+/* ---- Badge system ---- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+}
+.badge-discover { background: rgba(58,124,165,0.10); color: var(--color-signal-blue);   border: 1px solid rgba(58,124,165,0.22); }
+.badge-express  { background: rgba(184,115,51,0.10); color: var(--color-lucky-copper);  border: 1px solid rgba(184,115,51,0.22); }
+.badge-manage   { background: rgba(15,77,74,0.10);   color: var(--color-deep-teal);     border: 1px solid rgba(15,77,74,0.18); }
+.badge-learn    { background: rgba(47,143,99,0.10);  color: var(--color-ledger-green);  border: 1px solid rgba(47,143,99,0.18); }
+
+.status-active { background: rgba(47,143,99,0.12);  color: var(--color-positive);          border: 1px solid rgba(47,143,99,0.28); }
+.status-stub   { background: rgba(74,88,96,0.10);   color: var(--color-text-secondary);    border: 1px solid rgba(74,88,96,0.18); }
+.status-soon   { background: rgba(184,115,51,0.10); color: var(--color-accent);            border: 1px solid rgba(184,115,51,0.22); }
+
+/* ---- Express-belief button used inside dark phone protos ---- */
+.express-btn {
+  appearance: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--dark-copper);
+  letter-spacing: .04em;
+  padding: 10px 0 2px;
+  width: 100%;
+  text-align: right;
+  transition: opacity .15s;
+}
+.express-btn:hover { opacity: .7; }
+
+/* ---- Shared proto top-nav bar (inside .phone, below .statusbar) ---- */
+.old-topnav {
+  flex: 0 0 auto;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: rgba(16,17,20,0.88);
+  border-bottom: 1px solid var(--dark-line);
+}
+.old-topnav-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  opacity: .6;
+  transition: opacity .15s;
+  flex: 0 0 auto;
+}
+.old-topnav-logo:hover { opacity: 1; }
+.old-topnav-logo img  { height: 18px; width: auto; display: block; }
+.old-topnav-title {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--dark-text);
+  letter-spacing: .01em;
+}
+.old-topnav-back {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--dark-muted);
+  padding: 4px 0;
+  flex: 0 0 auto;
+  transition: color .15s;
+}
+.old-topnav-back:hover { color: var(--dark-text); }
+
+/* ---- Hub card grid ---- */
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-lg);
+}
+
+.hub-card {
+  background: var(--color-surface);
+  border: 1px solid rgba(13,27,30,0.07);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  transition: box-shadow .15s, transform .12s;
+}
+.hub-card:hover {
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-2px);
+}
+.hub-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+.hub-card-title {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--color-text-primary);
+  margin-top: var(--space-xs);
+  letter-spacing: -.01em;
+}
+.hub-card-desc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  flex: 1;
+}
+.hub-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid rgba(13,27,30,0.06);
+}
+.hub-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--color-surface);
+  background: var(--color-text-primary);
+  padding: 9px 15px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: opacity .15s;
+}
+.hub-open-btn:hover { opacity: .82; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-card { transition: none; }
+}
