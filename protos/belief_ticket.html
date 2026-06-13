@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Old Lucky Dog — Belief Ticket</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#101114; --surface:#161A1E; --surface-2:#1B2026;
+  --text:#F5F3EE; --muted:#BFC7CC; --faint:#79828A;
+  --copper:#C9782F; --copper-bright:#E59A4D; --blue:#63A4D1; --green:#49A579; --red:#D9685D;
+  --line:rgba(191,199,204,0.10); --line-2:rgba(191,199,204,0.16);
+  --sora:'Sora','Verdana',sans-serif;
+  --inter:'Inter',system-ui,-apple-system,sans-serif;
+  --mono:'IBM Plex Mono','Consolas',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--inter);
+  background:radial-gradient(120% 80% at 50% 0%, #0c0e11 0%, #050506 70%);
+  color:var(--text); -webkit-font-smoothing:antialiased;
+  display:flex; align-items:flex-start; justify-content:center; min-height:100vh; padding:28px 16px;}
+.stage{display:flex; flex-direction:column; align-items:center; gap:18px}
+.phone{width:390px; max-width:100%; height:min(860px,94vh); background:var(--bg);
+  border-radius:42px; border:1px solid #23292f;
+  box-shadow:0 0 0 9px #16191d,0 0 0 10px #2a3036,0 40px 90px -30px rgba(0,0,0,0.9);
+  position:relative; overflow:hidden; display:flex; flex-direction:column;}
+.statusbar{flex:0 0 auto; height:44px; display:flex; align-items:center; justify-content:space-between;
+  padding:0 26px; font-family:var(--mono); font-size:13px; color:var(--text);}
+.statusbar .glyphs{display:flex; align-items:center; gap:6px}
+.statusbar .bar{width:3px;border-radius:1px;background:var(--text)}
+.statusbar .bar.b1{height:5px;opacity:.5}.statusbar .bar.b2{height:7px;opacity:.7}.statusbar .bar.b3{height:9px;opacity:.85}.statusbar .bar.b4{height:11px}
+.statusbar .batt{width:22px;height:11px;border:1px solid var(--text);border-radius:3px;position:relative;opacity:.9}
+.statusbar .batt::after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:5px;background:var(--text);border-radius:0 1px 1px 0}
+.statusbar .batt::before{content:"";position:absolute;left:1.5px;top:1.5px;bottom:1.5px;width:13px;background:var(--text);border-radius:1px}
+
+.eyebrow{font-weight:600; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--copper)}
+.mono{font-family:var(--mono)}
+
+/* header / progress */
+.tophead{flex:0 0 auto; padding:6px 20px 10px}
+.thbar{display:flex; align-items:center; gap:12px; margin-bottom:12px}
+.back{appearance:none;background:none;border:none;color:var(--muted);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:8px}
+.back:hover{background:rgba(255,255,255,.04)}
+.back svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.thtitle{font-weight:600;font-size:16px;letter-spacing:.01em}
+.thtitle small{display:block;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.steps{display:flex; gap:7px}
+.seg{flex:1; display:flex; flex-direction:column; gap:6px}
+.seg .barline{height:3px;border-radius:3px;background:var(--line-2)}
+.seg.done .barline,.seg.active .barline{background:var(--copper)}
+.seg .lab{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.seg.active .lab{color:var(--copper)} .seg.done .lab{color:var(--muted)}
+
+/* belief recap chip */
+.recap{margin:0 20px; display:flex; align-items:center; gap:10px; background:var(--surface);
+  border:1px solid var(--line); border-radius:12px; padding:10px 13px}
+.recap .rq{font-size:12.5px;color:var(--text);line-height:1.3;flex:1}
+.recap .rq b{font-weight:600}
+.recap .rnums{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:0 0 auto}
+.recap .rg{font-family:var(--mono);font-size:15px;color:var(--copper);font-weight:500;line-height:1}
+.recap .rsub{font-family:var(--mono);font-size:9px;color:var(--faint);letter-spacing:.03em}
+
+/* scroll body */
+.screen{flex:1 1 auto; overflow-y:auto; overflow-x:hidden; padding:14px 20px 14px; position:relative}
+.screen::-webkit-scrollbar{width:0}
+.step{display:none} .step.show{display:block}
+
+.qhead{font-family:var(--sora);font-weight:700;font-size:21px;letter-spacing:-.01em;line-height:1.12;margin-bottom:5px}
+.qsub{font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:16px;max-width:33ch}
+
+/* shape tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:18px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 13px;cursor:pointer;transition:border-color .15s ease,background .15s ease;position:relative}
+.tile:hover{border-color:var(--line-2)}
+.tile.sel{border-color:var(--copper);background:var(--surface-2)}
+.tile.sel::after{content:"";position:absolute;top:11px;right:11px;width:8px;height:8px;border-radius:50%;background:var(--copper);box-shadow:0 0 0 3px rgba(201,120,47,.18)}
+.tile .glyph{height:26px;margin-bottom:10px}
+.tile .glyph svg{height:26px;width:44px;overflow:visible}
+.tile .tname{font-weight:600;font-size:14px;margin-bottom:3px}
+.tile .tdesc{font-size:11px;color:var(--faint);line-height:1.35}
+
+.fieldrow{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid var(--line)}
+.fieldrow .fl{font-size:13px;color:var(--muted)}
+.fieldrow .fv{font-family:var(--mono);font-size:13px;color:var(--text);display:inline-flex;align-items:center;gap:8px}
+.fieldrow .fv .edit{font-size:10px;color:var(--copper);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+
+/* shape switch pills (engine) */
+.switch{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:4px;margin-bottom:14px}
+.switch button{flex:1;appearance:none;border:none;background:none;cursor:pointer;font-family:var(--inter);font-size:11px;font-weight:500;color:var(--muted);padding:8px 4px;border-radius:8px;letter-spacing:.01em;transition:background .15s,color .15s}
+.switch button.on{background:var(--surface-2);color:var(--copper)}
+
+/* budget slider */
+.bwrap{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:13px 14px 15px;margin-bottom:16px}
+.bwrap .bhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.bwrap .bhead .blab{font-size:11px;letter-spacing:.04em;color:var(--muted)}
+.bwrap .bhead .bval{font-family:var(--mono);font-weight:500;font-size:19px;color:var(--text)}
+.bwrap .bhead .bval .bpct{font-size:11px;color:var(--faint);margin-left:5px}
+.bslider{position:relative;height:22px;touch-action:none}
+.bs-track{position:absolute;top:50%;left:0;right:0;height:3px;transform:translateY(-50%);background:var(--line-2);border-radius:3px}
+.bs-fill{position:absolute;top:50%;left:0;height:3px;transform:translateY(-50%);background:var(--copper);border-radius:3px;opacity:.5}
+.bs-rule{position:absolute;top:50%;width:0;height:18px;transform:translate(-50%,-50%);border-left:1.5px dashed var(--copper)}
+.bs-rule span{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:8px;letter-spacing:.06em;color:var(--copper);white-space:nowrap;text-transform:uppercase;opacity:.9}
+.bs-handle{position:absolute;top:50%;width:20px;height:20px;transform:translate(-50%,-50%);background:var(--copper);border:2.5px solid var(--bg);border-radius:50%;cursor:grab;box-shadow:0 0 0 1px var(--copper),0 4px 10px -2px rgba(0,0,0,.6);transition:box-shadow .12s}
+.bs-handle.drag{box-shadow:0 0 0 1px var(--copper-bright),0 0 0 8px rgba(201,120,47,.14)}
+.bs-handle.over{background:var(--red);box-shadow:0 0 0 1px var(--red),0 0 0 8px rgba(217,104,93,.16)}
+.bnote{font-size:10.5px;color:var(--faint);margin-top:12px;line-height:1.4}
+
+/* engine */
+.enghead{margin-bottom:4px}
+.engcap{font-size:11px;color:var(--faint);line-height:1.45;margin-bottom:14px}
+.engcap b{color:var(--muted);font-weight:500}
+.exp{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:11px;cursor:pointer;transition:border-color .15s,background .15s;position:relative}
+.exp:hover{border-color:var(--line-2)}
+.exp.sel{border-color:var(--copper);background:var(--surface-2)}
+.exp.ref{border-top:2px solid var(--copper)}
+.exp.dim{opacity:.72}
+.exp-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.bdg{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:999px;font-weight:600}
+.bdg.ref{color:var(--copper);border:1px solid rgba(201,120,47,.45)}
+.bdg.fit{color:var(--bg);background:var(--copper)}
+.bdg.new{color:var(--blue);border:1px solid rgba(99,164,209,.4)}
+.exp .pglyph{flex:0 0 auto}
+.exp .pglyph svg{height:24px;width:42px;overflow:visible}
+.exp .ename{font-weight:600;font-size:15px;margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.exp .sel-dot{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--line-2);flex:0 0 auto;position:relative}
+.exp.sel .sel-dot{border-color:var(--copper)}
+.exp.sel .sel-dot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--copper)}
+.exp .edetail{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.03em;margin-bottom:11px}
+.stats{display:flex;gap:0;border-top:1px solid var(--line);padding-top:10px}
+.stat{flex:1;display:flex;flex-direction:column;gap:3px}
+.stat .sk{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.stat .sv{font-family:var(--mono);font-size:14px;font-weight:500}
+.stat .sv.be{color:var(--blue)} .stat .sv.edge{color:var(--copper)} .stat .sv.loss{color:var(--text)}
+.eflags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.eflag{font-size:10px;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+.eflag .fd{width:5px;height:5px;border-radius:50%;background:var(--faint)}
+.eflag.shape .fd{background:var(--copper)}
+.enote{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:9px;letter-spacing:.02em}
+
+/* conscience */
+.csum{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px;display:flex;align-items:center;gap:13px}
+.csum .pglyph svg{height:26px;width:46px;overflow:visible}
+.csum .cinfo{flex:1}
+.csum .cn{font-weight:600;font-size:15px;margin-bottom:2px}
+.csum .cd{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.csum .cl{font-family:var(--mono);font-size:13px;color:var(--text);text-align:right}
+.csum .cl small{display:block;font-size:8.5px;color:var(--faint);letter-spacing:.08em;text-transform:uppercase}
+
+.conscience{background:var(--surface-2);border:1px solid var(--line);border-left:2px solid var(--copper);border-radius:12px;padding:15px 15px 4px;margin-bottom:16px}
+.cline{font-family:var(--sora);font-weight:600;font-size:16px;line-height:1.3;margin-bottom:14px;letter-spacing:-.005em}
+.cline b{color:var(--copper)}
+.cblock{margin-bottom:14px}
+.cblock .ce{margin-bottom:5px}
+.cblock p{font-size:12px;color:var(--muted);line-height:1.5}
+.cblock p b{color:var(--text);font-weight:600}
+
+/* size enforcement */
+.sizebox{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px;margin-bottom:8px}
+.sizebox.breach{border-color:rgba(217,104,93,.5);background:rgba(217,104,93,.05)}
+.szstat{display:flex;align-items:center;gap:9px;margin-top:13px;font-size:12px;line-height:1.4}
+.szstat .ico{flex:0 0 auto;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px}
+.szstat.ok .ico{border:1.5px solid var(--copper);color:var(--copper)}
+.szstat.bad .ico{background:var(--red);color:var(--bg);font-weight:700}
+.szstat .sztext{color:var(--muted)} .szstat .sztext b{color:var(--text);font-weight:600}
+.szstat.bad .sztext b{color:var(--red)}
+.fixrow{display:flex;gap:9px;margin-top:13px}
+.fixrow button{appearance:none;border:none;cursor:pointer;font-family:var(--inter);font-weight:600;font-size:12px;padding:10px 13px;border-radius:9px}
+.fix-resize{background:var(--text);color:var(--bg);flex:1}
+.fix-override{background:none;border:1px solid var(--line-2)!important;color:var(--muted)}
+
+/* footer action */
+.footer{flex:0 0 auto;padding:12px 20px calc(12px + env(safe-area-inset-bottom,8px));border-top:1px solid var(--line);background:linear-gradient(180deg,rgba(22,26,30,0),rgba(13,14,17,.5))}
+.act{width:100%;appearance:none;border:none;cursor:pointer;font-family:var(--inter);font-weight:600;font-size:15px;color:var(--bg);background:var(--text);border-radius:13px;padding:15px;letter-spacing:.005em;transition:transform .08s,filter .12s,opacity .12s}
+.act:hover{filter:brightness(.93)} .act:active{transform:scale(.99)}
+.act:disabled{opacity:.4;cursor:not-allowed}
+.act.placed{background:var(--green);color:var(--bg)}
+.fhint{text-align:center;font-size:10.5px;color:var(--faint);margin-top:9px;line-height:1.4}
+
+.toast{position:absolute;left:50%;bottom:20px;transform:translate(-50%,14px);opacity:0;pointer-events:none;background:var(--text);color:var(--bg);font-weight:600;font-size:12.5px;padding:12px 16px;border-radius:11px;box-shadow:0 12px 30px -8px rgba(0,0,0,.7);transition:opacity .25s,transform .25s;max-width:300px;line-height:1.35;z-index:9}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast .arr{color:var(--copper)}
+.caption{font-family:var(--mono);font-size:11px;color:#5b636b;letter-spacing:.04em;text-align:center;max-width:380px;line-height:1.5}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:430px){body{padding:0}.phone{border-radius:0;height:100vh;border:none;box-shadow:none}.caption{display:none}}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span>
+      <span class="glyphs"><span class="bar b1"></span><span class="bar b2"></span><span class="bar b3"></span><span class="bar b4"></span><span style="width:6px"></span><span class="batt"></span></span>
+    </div>
+
+    <div class="tophead">
+      <div class="thbar">
+        <button class="back" id="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="thtitle">Belief Ticket<small id="stepname">Step 1 of 3 · Shape</small></div>
+      </div>
+      <div class="steps">
+        <div class="seg active" data-s="1"><div class="barline"></div><div class="lab">Shape</div></div>
+        <div class="seg" data-s="2"><div class="barline"></div><div class="lab">Express</div></div>
+        <div class="seg" data-s="3"><div class="barline"></div><div class="lab">Confirm</div></div>
+      </div>
+    </div>
+
+    <div class="recap">
+      <div class="rq"><b>BTC holds above $110k</b> through Sunday</div>
+      <div class="rnums"><span class="rg">+18</span><span class="rsub">YOU 64 · MKT 46</span></div>
+    </div>
+
+    <div class="screen">
+
+      <!-- STEP 1: SHAPE -->
+      <div class="step show" id="step1">
+        <div class="qhead">How should the payoff behave?</div>
+        <div class="qsub">Pick the shape of the bet, not a strike. We&rsquo;ll find the cheapest way to express it.</div>
+        <div class="tiles" id="tiles"></div>
+        <div class="fieldrow"><span class="fl">Horizon</span><span class="fv">Through Sunday <span class="edit">resolves with belief</span></span></div>
+        <div class="fieldrow"><span class="fl">Underlying</span><span class="fv">BTC &middot; spot $112,340</span></div>
+      </div>
+
+      <!-- STEP 2: EXPRESS -->
+      <div class="step" id="step2">
+        <div class="switch" id="switch"></div>
+        <div class="bwrap">
+          <div class="bhead"><span class="blab">Risk budget</span><span class="bval"><span id="bval2">$600</span><span class="bpct" id="bpct2">1.3% of account</span></span></div>
+          <div class="bslider" id="slider2" data-min="100" data-max="3000">
+            <div class="bs-track"><div class="bs-fill"></div><div class="bs-rule"><span>Your rule</span></div><div class="bs-handle"><span></span></div></div>
+          </div>
+          <div class="bnote">Sized from your <b style="color:var(--muted)">64%</b> applied over the market&rsquo;s curve &mdash; your one number tilts the distribution, the rest is left to the market.</div>
+        </div>
+        <div class="enghead"><span class="eyebrow">Same belief, four ways</span></div>
+        <div class="engcap">Each priced in one unit &mdash; the <b>implied probability you&rsquo;re paying for</b>. Your read is 64%; the gap to each break-even is your edge.</div>
+        <div id="explist"></div>
+      </div>
+
+      <!-- STEP 3: CONFIRM -->
+      <div class="step" id="step3">
+        <div class="csum" id="csum"></div>
+        <div class="conscience">
+          <div class="cline" id="cline"></div>
+          <div class="cblock">
+            <div class="ce eyebrow">Your exit is a reason, not a price</div>
+            <p>If BTC <b>closes back below $110k</b>, your thesis is gone &mdash; that&rsquo;s the signal to leave, not a number on the P&amp;L. Your Thesis Monitor will watch that line, not the ticks.</p>
+          </div>
+          <div class="cblock">
+            <div class="ce eyebrow">First crypto expression</div>
+            <p>You&rsquo;ve earned the <b>read</b>; you haven&rsquo;t traded the <b>instrument</b>. Start at the size that lets you learn it &mdash; not the size that proves a point.</p>
+          </div>
+        </div>
+
+        <div class="sizebox" id="sizebox">
+          <div class="bhead" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <span class="blab" style="font-size:11px;color:var(--muted)">Size this position</span>
+            <span class="bval" style="font-family:var(--mono);font-weight:500;font-size:19px"><span id="bval3">$580</span><span class="bpct" id="bpct3" style="font-size:11px;color:var(--faint);margin-left:5px">1.3%</span></span>
+          </div>
+          <div class="bslider" id="slider3" data-min="100" data-max="3000">
+            <div class="bs-track"><div class="bs-fill"></div><div class="bs-rule"><span>Your rule</span></div><div class="bs-handle"><span></span></div></div>
+          </div>
+          <div id="szstatus"></div>
+        </div>
+      </div>
+
+      <div class="toast" id="toast"></div>
+    </div>
+
+    <div class="footer">
+      <button class="act" id="act">Continue</button>
+      <div class="fhint" id="fhint"></div>
+    </div>
+  </div>
+  <div class="caption" id="cap">Belief Ticket &middot; flip the shape to re-rank the engine &middot; drag the size past your rule to trip the stop</div>
+</div>
+
+<script>
+(function(){
+  var ACCOUNT=45000, RULE_PCT=1.5, RULE=Math.round(ACCOUNT*RULE_PCT/100); // 675
+  var BELIEF=64;
+
+  // payoff glyphs
+  var G={
+    defined:'<svg viewBox="0 0 44 26"><line x1="2" y1="20" x2="42" y2="20" stroke="rgba(191,199,204,.16)" stroke-width="1"/><polyline points="3,19 15,19 26,7 41,7" fill="none" stroke="var(--copper)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    symmetric:'<svg viewBox="0 0 44 26"><line x1="2" y1="13" x2="42" y2="13" stroke="rgba(191,199,204,.16)" stroke-width="1"/><polyline points="3,22 41,4" fill="none" stroke="var(--copper)" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    leveraged:'<svg viewBox="0 0 44 26"><line x1="2" y1="20" x2="42" y2="20" stroke="rgba(191,199,204,.16)" stroke-width="1"/><polyline points="3,21 13,21 41,3" fill="none" stroke="var(--copper)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    event:'<svg viewBox="0 0 44 26"><line x1="2" y1="14" x2="42" y2="14" stroke="rgba(191,199,204,.16)" stroke-width="1"/><polyline points="3,20 21,20 21,6 41,6" fill="none" stroke="var(--copper)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  };
+
+  var SHAPES=[
+    {id:'defined',name:'Defined risk',desc:'Capped loss, capped gain',glyph:G.defined,native:'spread'},
+    {id:'symmetric',name:'Symmetric',desc:'Gain mirrors loss',glyph:G.symmetric,native:'spot'},
+    {id:'leveraged',name:'Leveraged',desc:'Amplified, with a floor',glyph:G.leveraged,native:'perp'},
+    {id:'event',name:'Event-style',desc:'All-or-nothing binary',glyph:G.event,native:'event'}
+  ];
+
+  var EXP={
+    event:{id:'event',name:'Event contract',detail:'BTC \u2265 $110k \u00b7 settles Sunday',be:46,glyph:G.event,
+      loss:function(b){return b;}, lossNote:'all premium',
+      note:'46\u00a2 = 46% \u2014 the market\u2019s probability, exactly.', flags:[]},
+    spread:{id:'spread',name:'Call spread',detail:'BTC $110k \u2013 $116k \u00b7 Sunday',be:54,glyph:G.defined,
+      loss:function(b){return Math.round(b*0.97);}, lossNote:'net debit',
+      note:'', flags:[]},
+    perp:{id:'perp',name:'Perp + hard stop',detail:'BTC perp \u00b7 3\u00d7 \u00b7 stop $108k',be:49,glyph:G.leveraged,
+      loss:function(b){return Math.round(b*0.9);}, lossNote:'at stop, pre-slip',
+      note:'', flags:['Funding cost accrues','Stop can slip on a gap'], isNew:true},
+    spot:{id:'spot',name:'Spot BTC',detail:'Buy & hold through Sunday',be:50,glyph:G.symmetric,
+      loss:function(b){return null;}, lossNote:'',
+      note:'', flags:['No downside cap','Ties up full capital']}
+  };
+  var nativeFor={defined:'spread',symmetric:'spot',leveraged:'perp',event:'event'};
+
+  var state={step:1, shape:'defined', budget:600, selected:'spread', userPicked:false, overridden:false, placed:false};
+  function money(v){return '$'+Math.round(v).toLocaleString();}
+  function pct(v){return (v/ACCOUNT*100);}
+
+  // ---------- step 1 tiles ----------
+  var tiles=document.getElementById('tiles');
+  function renderTiles(){
+    tiles.innerHTML=SHAPES.map(function(s){
+      return '<div class="tile '+(state.shape===s.id?'sel':'')+'" data-id="'+s.id+'">'+
+        '<div class="glyph">'+s.glyph+'</div><div class="tname">'+s.name+'</div><div class="tdesc">'+s.desc+'</div></div>';
+    }).join('');
+    tiles.querySelectorAll('.tile').forEach(function(t){t.onclick=function(){setShape(t.dataset.id);renderTiles();};});
+  }
+
+  // ---------- step 2 switch ----------
+  var sw=document.getElementById('switch');
+  function renderSwitch(){
+    sw.innerHTML=SHAPES.map(function(s){return '<button data-id="'+s.id+'" class="'+(state.shape===s.id?'on':'')+'">'+s.name.split(' ')[0]+'</button>';}).join('');
+    sw.querySelectorAll('button').forEach(function(b){b.onclick=function(){setShape(b.dataset.id);};});
+  }
+  function setShape(id){
+    state.shape=id; state.userPicked=false; state.selected=nativeFor[id];
+    renderSwitch(); renderEngine(); renderTiles(); renderConscience(); updateFooter();
+  }
+
+  // ---------- step 2 engine ----------
+  var explist=document.getElementById('explist');
+  function orderedIds(){
+    var best=nativeFor[state.shape];
+    if(best==='event') return ['event','spread','perp','spot'];
+    var rest=['spread','perp','spot'].filter(function(x){return x!==best;});
+    return ['event',best].concat(rest);
+  }
+  function renderEngine(){
+    var ids=orderedIds(), best=nativeFor[state.shape];
+    var shapeName={defined:'capped',symmetric:'symmetric',leveraged:'leveraged',event:'all-or-nothing'}[state.shape];
+    explist.innerHTML=ids.map(function(id){
+      var e=EXP[id], edge=BELIEF-e.be, isSel=state.selected===id;
+      var badges='';
+      if(id==='event'){badges+='<span class="bdg ref">Reference</span>'; if(state.shape==='event')badges+='<span class="bdg fit">Best fit</span>';}
+      if(id===best && id!=='event')badges+='<span class="bdg fit">Best fit</span>';
+      if(e.isNew)badges+='<span class="bdg new">New instrument</span>';
+      var loss=e.loss(state.budget);
+      var lossStr = loss===null ? 'Uncapped' : money(loss);
+      var dim = (id!=='event' && id!==best) ? 'dim':'';
+      // shape-fit flag
+      var flags=e.flags.slice();
+      var shapeFlag='';
+      if(id==='event' && state.shape!=='event') shapeFlag='Pure read, but all-or-nothing \u2014 not the '+shapeName+' shape you chose';
+      else if(id==='spot' && state.shape!=='symmetric') shapeFlag='Doesn\u2019t match your '+shapeName+' shape';
+      else if(id==='perp' && state.shape!=='leveraged') shapeFlag='Leveraged \u2014 heavier than the '+shapeName+' shape you chose';
+      var flagsHtml='';
+      if(shapeFlag) flagsHtml+='<span class="eflag shape"><span class="fd"></span>'+shapeFlag+'</span>';
+      flags.forEach(function(f){flagsHtml+='<span class="eflag"><span class="fd"></span>'+f+'</span>';});
+
+      return '<div class="exp '+(id==='event'?'ref ':'')+(isSel?'sel ':'')+dim+'" data-id="'+id+'">'+
+        '<div class="exp-top"><div class="badges">'+badges+'</div><div class="pglyph">'+e.glyph+'</div></div>'+
+        '<div class="ename"><span class="sel-dot"></span>'+e.name+'</div>'+
+        '<div class="edetail">'+e.detail+'</div>'+
+        '<div class="stats">'+
+          '<div class="stat"><span class="sk">Break-even</span><span class="sv be">'+e.be+'%</span></div>'+
+          '<div class="stat"><span class="sk">Your edge</span><span class="sv edge">+'+edge+'</span></div>'+
+          '<div class="stat"><span class="sk">Max loss</span><span class="sv loss">'+lossStr+'</span></div>'+
+        '</div>'+
+        (flagsHtml?'<div class="eflags">'+flagsHtml+'</div>':'')+
+        (e.note?'<div class="enote">'+e.note+'</div>':'')+
+      '</div>';
+    }).join('');
+    explist.querySelectorAll('.exp').forEach(function(x){x.onclick=function(){state.selected=x.dataset.id;state.userPicked=true;renderEngine();renderConscience();updateFooter();};});
+  }
+
+  // ---------- budget sliders ----------
+  function pctPos(el,v){var mn=+el.dataset.min,mx=+el.dataset.max;return (v-mn)/(mx-mn)*100;}
+  function initSlider(el){
+    var mn=+el.dataset.min,mx=+el.dataset.max;
+    var handle=el.querySelector('.bs-handle');
+    var rule=el.querySelector('.bs-rule');
+    rule.style.left=pctPos(el,RULE)+'%';
+    function paint(){
+      var p=pctPos(el,state.budget);
+      handle.style.left=p+'%'; el.querySelector('.bs-fill').style.width=p+'%';
+      handle.classList.toggle('over', state.budget>RULE);
+    }
+    el._paint=paint; paint();
+    var drag=false;
+    function fromX(x){var r=el.getBoundingClientRect();var v=mn+(x-r.left)/r.width*(mx-mn);v=Math.max(mn,Math.min(mx,Math.round(v/10)*10));setBudget(v);}
+    handle.addEventListener('pointerdown',function(e){drag=true;handle.classList.add('drag');handle.setPointerCapture(e.pointerId);e.preventDefault();});
+    handle.addEventListener('pointermove',function(e){if(drag)fromX(e.clientX);});
+    handle.addEventListener('pointerup',function(){drag=false;handle.classList.remove('drag');});
+    el.addEventListener('pointerdown',function(e){if(e.target===handle||handle.contains(e.target))return;fromX(e.clientX);});
+  }
+  var sliders=[document.getElementById('slider2'),document.getElementById('slider3')];
+
+  function setBudget(v){
+    state.budget=v; if(v<=RULE)state.overridden=false;
+    sliders.forEach(function(s){if(s._paint)s._paint();});
+    document.getElementById('bval2').textContent=money(v);
+    document.getElementById('bpct2').textContent=pct(v).toFixed(1)+'% of account';
+    renderEngine();
+    renderConscience();
+  }
+
+  // ---------- step 3 conscience ----------
+  function renderConscience(){
+    var e=EXP[state.selected];
+    var loss=e.loss(state.budget); var lossN = loss===null?state.budget:loss;
+    var lossStr = loss===null?money(state.budget)+' (uncapped)':money(loss);
+    document.getElementById('csum').innerHTML=
+      '<div class="pglyph">'+e.glyph+'</div>'+
+      '<div class="cinfo"><div class="cn">'+e.name+'</div><div class="cd">'+e.detail+'</div></div>'+
+      '<div class="cl">'+lossStr.split(' ')[0]+'<small>max loss</small></div>';
+    document.getElementById('cline').innerHTML='You believe <b>64%</b>. The market says 46%. You&rsquo;re risking '+money(lossN)+'.';
+    document.getElementById('bval3').textContent=money(state.budget);
+    document.getElementById('bpct3').textContent=pct(state.budget).toFixed(1)+'%';
+
+    var breach=state.budget>RULE;
+    var box=document.getElementById('sizebox'); box.classList.toggle('breach',breach);
+    var st=document.getElementById('szstatus');
+    if(!breach){
+      st.innerHTML='<div class="szstat ok"><span class="ico">\u2713</span><span class="sztext">Risking <b>'+money(state.budget)+'</b> \u00b7 '+pct(state.budget).toFixed(1)+'% \u2014 inside your <b>1.5%-per-idea</b> rule.</span></div>';
+    } else {
+      st.innerHTML='<div class="szstat bad"><span class="ico">!</span><span class="sztext"><b>'+money(state.budget)+' is '+pct(state.budget).toFixed(1)+'%</b> on a 3-day single-catalyst bet. Your rule is 1.5% ('+money(RULE)+').</span></div>'+
+        '<div class="fixrow"><button class="fix-resize" id="resize">Resize to '+money(RULE)+'</button><button class="fix-override" id="override">'+(state.overridden?'Override logged':'Override anyway')+'</button></div>';
+      var rz=document.getElementById('resize'); if(rz)rz.onclick=function(){setBudget(RULE);};
+      var ov=document.getElementById('override'); if(ov)ov.onclick=function(){state.overridden=true;renderConscience();};
+    }
+    updateFooter();
+  }
+
+  // ---------- step nav + footer ----------
+  var seg=document.querySelectorAll('.seg'), back=document.getElementById('back');
+  var act=document.getElementById('act'), fhint=document.getElementById('fhint'), stepname=document.getElementById('stepname');
+  var stepEls={1:document.getElementById('step1'),2:document.getElementById('step2'),3:document.getElementById('step3')};
+  var screen=document.querySelector('.screen');
+  function showStep(n){
+    state.step=n;
+    for(var k in stepEls){stepEls[k].classList.toggle('show',+k===n);}
+    seg.forEach(function(s){var sn=+s.dataset.s;s.classList.toggle('active',sn===n);s.classList.toggle('done',sn<n);});
+    stepname.textContent='Step '+n+' of 3 \u00b7 '+({1:'Shape',2:'Express',3:'Confirm'})[n];
+    back.style.visibility=n===1?'hidden':'visible';
+    screen.scrollTop=0;
+    if(n===3)renderConscience();
+    updateFooter();
+  }
+  function updateFooter(){
+    if(state.placed)return;
+    if(state.step===1){act.textContent='See expressions';act.disabled=false;fhint.textContent='';act.classList.remove('placed');}
+    else if(state.step===2){var e=EXP[state.selected];act.textContent='Review '+e.name.toLowerCase();act.disabled=false;fhint.textContent='';}
+    else {
+      var breach=state.budget>RULE;
+      if(breach && !state.overridden){act.textContent='Place \u2014 above your rule';act.disabled=true;fhint.textContent='Resize or override to place.';}
+      else {act.textContent='Place the '+EXP[state.selected].name.toLowerCase();act.disabled=false;fhint.textContent=state.overridden?'Override logged \u2014 placing above your rule.':'You can cancel any time before Sunday\u2019s settle.';}
+    }
+  }
+  back.onclick=function(){if(state.step>1)showStep(state.step-1);};
+  act.onclick=function(){
+    if(state.placed)return;
+    if(state.step<3){showStep(state.step+1);return;}
+    // place
+    state.placed=true; act.classList.add('placed'); act.textContent='\u2713 Placed'; act.disabled=true;
+    fhint.textContent='Now tracked by your Thesis Monitor \u2014 it watches your reason ($110k), not the ticks.';
+    var t=document.getElementById('toast');
+    t.innerHTML='Working. Moved to <b style="color:var(--copper)">Manage</b> \u2014 your thesis, not the ticks.';
+    t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2600);
+  };
+
+  // init
+  renderTiles(); renderSwitch(); renderEngine();
+  sliders.forEach(initSlider); setBudget(600); renderConscience();
+  showStep(1);
+})();
+</script>
+</body>
+</html>
